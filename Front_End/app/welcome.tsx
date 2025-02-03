@@ -4,17 +4,23 @@ import React, { useRef, useState } from "react";
 import { router } from "expo-router";
 import Swiper from "react-native-swiper";
 import { onboarding } from "@/constants";
+import { useGlobalContext } from "@/lib/globle-provider";
 
 const Onboarding = () => {
   const swiperRef = useRef<Swiper>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const { completeOnboarding } = useGlobalContext();
   const isLastSlide = activeIndex === onboarding.length - 1;
+
+  const handleGetStarted = () => {
+    completeOnboarding();
+    router.replace("/sign-in");
+  };
+
   return (
     <View className="flex h-full justify-between items-center">
       <TouchableOpacity
-        onPress={() => {
-          router.replace("/sign-in");
-        }}
+        onPress={handleGetStarted}
         className="w-full flex justify-end items-end p-5 font-bold text-xl"
       >
         <Text className="font-bold text-lg" style={{ color: "#7f7d80" }}>
@@ -53,9 +59,7 @@ const Onboarding = () => {
       <CustomButton
         title={isLastSlide ? "Get Started" : "Next"}
         onPress={() =>
-          isLastSlide
-            ? router.replace("/sign-in")
-            : swiperRef.current?.scrollBy(1)
+          isLastSlide ? handleGetStarted() : swiperRef.current?.scrollBy(1)
         }
         className="w-11/12 mt-10 mb-5"
       />
