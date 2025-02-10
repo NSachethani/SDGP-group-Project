@@ -1,15 +1,11 @@
-import React, { useState } from "react";
-import { Link, Redirect } from "expo-router";
 import {
   Text,
   View,
   ImageBackground,
   SafeAreaView,
-  TouchableOpacity,
-  Image,
   StyleSheet,
 } from "react-native";
-
+import React, { useState, useEffect } from "react";
 import { Picker } from "@react-native-picker/picker";
 
 const getCurrentDate = () => {
@@ -22,9 +18,10 @@ const getCurrentDate = () => {
   return date.toLocaleDateString("en-US", options).replace(",", "");
 };
 
-export default function Index() {
+export default function home() {
   const [selectedOption, setSelectedOption] = useState("Daily");
   const currentDate = `Today, ${getCurrentDate()}`;
+  const today = new Date();
   return (
     <>
       <ImageBackground
@@ -68,18 +65,19 @@ export default function Index() {
               </Picker>
             </View>
           </View>
-            <View className="flex justify-end flex-col ">
+          <View className="flex justify-end flex-col ">
             <Text className="text-lg text-['#797575'] ml-4 mb-3">
               Analytics for{" "}
               <Text className="text-lg text-[#4D5A60] ">{currentDate}</Text>
             </Text>
             <View style={[styles.horizontalLine1]} />
-            </View>
+          </View>
         </SafeAreaView>
       </ImageBackground>
     </>
   );
 }
+
 const styles = StyleSheet.create({
   dropdown: {
     marginTop: 10,
@@ -89,7 +87,6 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     elevation: 5,
   },
-
   horizontalLine1: {
     height: 2,
     backgroundColor: "#ABAAAF",

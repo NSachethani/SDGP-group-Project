@@ -30,6 +30,9 @@ import games from "@/assets/icons/games.png";
 import forum from "@/assets/icons/forum.png";
 import notification from "@/assets/icons/notification.png";
 import settings from "@/assets/icons/settings.png";
+import email from "@/assets/icons/email.png";
+import lock from "@/assets/icons/lock.png";
+import check from "@/assets/icons/check.png";
 
 export default {
   google,
@@ -64,4 +67,7 @@ export default {
   forum,
   notification,
   settings,
+  email,
+  lock,
+  check,
 };

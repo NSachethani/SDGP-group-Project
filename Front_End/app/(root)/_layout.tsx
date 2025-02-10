@@ -1,21 +1,12 @@
-import { useGlobalContext } from "@/lib/globle-provider";
-import { Redirect, Slot } from "expo-router";
-import { ActivityIndicator, SafeAreaView } from "react-native";
+import { Stack } from "expo-router";
 
-export default function AppLayout() {
-  const { loading, isLoggedIn, hasCompletedOnboarding } = useGlobalContext();
-  if (loading) {
-    return (
-      <SafeAreaView className="bg-white h-full flex justify-center items-center">
-        <ActivityIndicator className="text-primary-300" size="large" />
-      </SafeAreaView>
-    );
-  }
-  if (!hasCompletedOnboarding) {
-    return <Redirect href="/welcome" />;
-  }
-  if (!isLoggedIn) 
-    return <Redirect href='/sign-in' />;
+const Layout = () => {
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  );
+  
+};
 
-    return <Slot />;
-}
+export default Layout;
