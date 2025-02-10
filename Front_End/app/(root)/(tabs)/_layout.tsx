@@ -1,7 +1,7 @@
 import { View, Text, Image } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
-import icons from "@/constants/icons";
+import icons from "@/constants/icon";
 const TabIcon = ({
   focused,
   icon,
@@ -11,8 +11,8 @@ const TabIcon = ({
   title: string;
   icon: any;
 }) => (
-  <View className="flex-1 mt-2 flex flex-col items-center">
-    <Image source={icon} resizeMode="contain" className="size-10" />
+  <View className="flex-1 mt-2 flex flex-col items-center justify-center">
+    <Image source={icon} resizeMode="contain" className="w-12" />
   </View>
 );
 
@@ -34,9 +34,9 @@ const TabsLayout = () => {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
-          title: "index",
+          title: "home",
           tabBarIcon: ({ focused }) => (
             <TabIcon icon={icons.home} focused={focused} title="Home" />
           ),
@@ -78,9 +78,9 @@ const TabsLayout = () => {
       />
 
       <Tabs.Screen
-        name="settigns"
+        name="settings"
         options={{
-          title: "settigns",
+          title: "settings",
           tabBarIcon: ({ focused }) => (
             <TabIcon icon={icons.settings} focused={focused} title="settigns" />
           ),
