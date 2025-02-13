@@ -33,6 +33,7 @@ import settings from "@/assets/icons/settings.png";
 import email from "@/assets/icons/email.png";
 import lock from "@/assets/icons/lock.png";
 import check from "@/assets/icons/check.png";
+import fingrprint from "@/assets/icons/fingerprint.png";
 
 export default {
   google,
@@ -70,4 +71,5 @@ export default {
   email,
   lock,
   check,
+  fingrprint,
 };
