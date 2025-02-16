@@ -12,6 +12,7 @@ import {
 import React, { useState, useEffect, useMemo } from "react";
 import { Picker } from "@react-native-picker/picker";
 import icon from "@/constants/icon";
+import SocialMediaMeter from "@/components/SocialMediaMeter";
 
 const getCurrentDate = () => {
   const date = new Date();
@@ -32,11 +33,28 @@ const formatTime = (ms: number) => {
   return `${hrs}hr, ${mins}mins`;
 };
 
+// New helper to format full date.
+const formatFullDate = (date: Date) =>
+  date.toLocaleDateString("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
+// Updated helper to get analytics date using full structure.
+const getFormattedAnalyticsDate = (usageData: any[], selectedDay: any) => {
+  const idx = usageData.findIndex((day) => day === selectedDay);
+  // Compute the day from index (assuming index 0 is today)
+  const dayDate = new Date(Date.now() - idx * 86400000);
+  if (idx === 0) return `Today, ${formatFullDate(dayDate)}`;
+  if (idx === 1) return `Yesterday, ${formatFullDate(dayDate)}`;
+  return formatFullDate(dayDate);
+};
+
 export default function home() {
   const [selectedOption, setSelectedOption] = useState("Daily");
   const [usageData, setUsageData] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState<any>(null);
-  const currentDate = `Today, ${getCurrentDate()}`;
 
   useEffect(() => {
     ScreenTimeModule.checkAndRequestUsageAccess()
@@ -109,7 +127,11 @@ export default function home() {
             <View className="flex justify-end flex-col ">
               <Text className="text-lg text-['#797575'] ml-4 mb-3">
                 Analytics for{" "}
-                <Text className="text-lg text-[#4D5A60] ">{currentDate}</Text>
+                <Text className="text-lg text-[#4D5A60] ">
+                  {selectedDay
+                    ? getFormattedAnalyticsDate(usageData, selectedDay)
+                    : formatFullDate(new Date())}
+                </Text>
               </Text>
               <View style={[styles.horizontalLine1]} />
             </View>
@@ -127,8 +149,11 @@ export default function home() {
                   </Text>
                   <View className=" border-2 border-[#8D5395] rounded-full">
                     <Text className="text-md text-[#8D5395] font-rubik ml-4 mr-4">
-                      {usageData.indexOf(selectedDay) === 0
+                      {usageData.findIndex((day) => day === selectedDay) === 0
                         ? "Today"
+                        : usageData.findIndex((day) => day === selectedDay) ===
+                          1
+                        ? "Yesterday"
                         : selectedDay.date}
                     </Text>
                   </View>
@@ -146,6 +171,7 @@ export default function home() {
                     // Calculate fill height based on updated containerHeight
                     const fillHeight =
                       (day.totalScreenTime / effectiveMax) * containerHeight;
+                    const dayDate = new Date(Date.now() - idx * 86400000);
                     return (
                       <TouchableOpacity
                         key={idx}
@@ -176,7 +202,7 @@ export default function home() {
               </Text>
             </View> */}
             <View className="flex justify-center bg-white/60 rounded-3xl m-2">
-              <View className="flex flex-row w-full mt-5 mb-5 ml-1 justify-around" >
+              <View className="flex flex-row w-full mt-5 mb-5 ml-1 justify-around">
                 <View className="flex justify-center items-center">
                   <Image source={icon.fingrprint} className="w-20 h-20" />
                 </View>
@@ -188,7 +214,7 @@ export default function home() {
                     </Text>
                   </Text>
                 </View>
-                <View style={styles.verticalLine} ></View>
+                <View style={styles.verticalLine}></View>
                 <View className="flex justify-center items-center rounded-xl bg-[#8D5395]/80 flex-wrap mr-1">
                   <Text className="text-md font-ztgatha text-white m-2">
                     TOTAL DETOX TIME
@@ -207,6 +233,14 @@ export default function home() {
                 </View>
               </View>
             </View>
+            <View className="flex justify-center bg-white/60 rounded-3xl mt-2 ">
+              {/* Social media usage meter */}
+              {selectedDay && selectedDay.apps && (
+                <SocialMediaMeter appsData={selectedDay.apps} />
+              )}
+            </View>
+            <View className="flex justify-center bg-white/60 rounded-3xl mt-10"></View>
+            <View className="flex justify-center bg-white/60 rounded-3xl mt-10"></View>
           </ScrollView>
         </SafeAreaView>
       </ImageBackground>

@@ -12,6 +12,28 @@ import java.util.Calendar
 import java.util.Locale
 
 object ScreenTimeService {
+    private fun mapToSocialAppName(pkg: String): String {
+        val lower = pkg.toLowerCase()
+        return when {
+            lower.contains("facebook") -> "facebook"
+            lower.contains("instagram") -> "instagram"
+            lower.contains("whatsapp") -> "whatsapp"
+            lower.contains("youtube") -> "youtube"
+            lower.contains("zhiliaoapp") -> "tiktok"
+            lower.contains("tiktok.lite") -> "tiktok_lite"
+            lower.contains("snapchat") -> "snapchat"
+            lower.contains("twitter") -> "twitter"
+            lower.contains("linkedin") -> "linkedin"
+            lower.contains("pinterest") -> "pinterest"
+            lower.contains("telegram") -> "telegram"
+            lower.contains("reddit") -> "reddit"
+            lower.contains("tencent") -> "wechat"
+            lower.contains("tinder") -> "tinder"
+            lower.contains("discord") -> "discord"
+            else -> pkg
+        }
+    }
+
     fun getUsageData(context: Context): WritableMap {
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
@@ -43,7 +65,8 @@ object ScreenTimeService {
                 totalScreenTime += usage.totalTimeInForeground
                 if (usage.totalTimeInForeground > 0) {
                     val appMap = Arguments.createMap()
-                    appMap.putString("name", pkg)
+                    // Map package name to friendly social app name if applicable.
+                    appMap.putString("name", mapToSocialAppName(pkg))
                     appMap.putDouble("screenTime", usage.totalTimeInForeground.toDouble())
                     appsArray.pushMap(appMap)
                 }
