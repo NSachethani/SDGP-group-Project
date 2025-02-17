@@ -240,7 +240,42 @@ export default function home() {
               )}
             </View>
             <View className="flex justify-center bg-white/60 rounded-3xl mt-10"></View>
-            <View className="flex justify-center bg-white/60 rounded-3xl mt-10"></View>
+            <View className="flex justify-center bg-white/60 rounded-3xl mt-10">
+              {selectedDay && selectedDay.apps
+                ? selectedDay.apps.map((app: any, index: number) => (
+                    <Text key={index} style={styles.appText}>
+                      {app.name}: {formatTime(app.screenTime)}
+                    </Text>
+                  ))
+                : null}
+
+              <View className="mt-4 ml-4">
+                {usageData.map((day, idx) => (
+                  <View key={idx} style={{ marginBottom: 20 }}>
+                    <Text style={styles.dayLabel}>
+                      {formatTime(day.totalScreenTime)}
+                    </Text>
+                    <View style={styles.progressContainer}>
+                      <View
+                        style={[
+                          styles.progressBar,
+                          { height: (day.totalScreenTime / 3600000) * 100 },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.unlocksText}>
+                      Total Unlocks: {day.unlocks}
+                    </Text>
+                    {day.apps &&
+                      day.apps.map((app: any, index: number) => (
+                        <Text key={index} style={styles.appText}>
+                          {app.name}: {formatTime(app.screenTime)}
+                        </Text>
+                      ))}
+                  </View>
+                ))}
+              </View>
+            </View>
           </ScrollView>
         </SafeAreaView>
       </ImageBackground>
@@ -280,6 +315,11 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end", // align fill at bottom
   },
   progressFill: {
+    width: "100%",
+    backgroundColor: "#8D5395",
+    borderRadius: 5,
+  },
+  progressBar: {
     width: "100%",
     backgroundColor: "#8D5395",
     borderRadius: 5,

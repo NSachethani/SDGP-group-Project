@@ -19,8 +19,8 @@ const SOCIAL_APPS = [
   "telegram",
   "reddit",
   "wechat",
-  "tinder", // added tinder
-  "discord", // added discord
+  "tinder", 
+  "discord", 
 ];
 
 // Color mapping for each social app.

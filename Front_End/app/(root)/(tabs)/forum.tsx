@@ -1,5 +1,7 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View, Text, BackHandler } from "react-native";
+import React, { useEffect } from "react";
+import { router } from "expo-router";
+
 
 const forum = () => {
   return (

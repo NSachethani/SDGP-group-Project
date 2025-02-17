@@ -15,7 +15,7 @@ object ScreenTimeService {
     private fun mapToSocialAppName(pkg: String): String {
         val lower = pkg.toLowerCase()
         return when {
-            lower.contains("facebook") -> "facebook"
+            lower.contains("facebook.katana") -> "facebook"
             lower.contains("instagram") -> "instagram"
             lower.contains("whatsapp") -> "whatsapp"
             lower.contains("youtube") -> "youtube"

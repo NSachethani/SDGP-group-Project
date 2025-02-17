@@ -34,6 +34,7 @@ import email from "@/assets/icons/email.png";
 import lock from "@/assets/icons/lock.png";
 import check from "@/assets/icons/check.png";
 import fingrprint from "@/assets/icons/fingerprint.png";
+import timer from "@/assets/icons/timer.png";
 
 export default {
   google,
@@ -72,4 +73,5 @@ export default {
   lock,
   check,
   fingrprint,
+  timer,
 };
