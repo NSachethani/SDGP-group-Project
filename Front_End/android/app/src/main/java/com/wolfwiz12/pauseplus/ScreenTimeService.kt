@@ -35,42 +35,59 @@ object ScreenTimeService {
     }
 
     fun getUsageData(context: Context): WritableMap {
+        val MAX_DAILY_MS = 86400000L
         val usageStatsManager =
             context.getSystemService(Context.USAGE_STATS_SERVICE) as UsageStatsManager
         val daysArray: WritableArray = Arguments.createArray()
 
         for (i in 0 until 7) {
-            // Calculate start and end of day (i days ago)
-            val calendar = Calendar.getInstance().apply {
-                add(Calendar.DAY_OF_YEAR, -i)
+            // Compute accurate local day boundaries based on the device's local time
+            val baseCalendar = Calendar.getInstance().apply {
                 set(Calendar.HOUR_OF_DAY, 0)
                 set(Calendar.MINUTE, 0)
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
             }
-            val startTime = calendar.timeInMillis
-            calendar.apply {
+            val startCalendar = (baseCalendar.clone() as Calendar).apply {
+                add(Calendar.DAY_OF_YEAR, -i)
+            }
+            val endCalendar = (startCalendar.clone() as Calendar).apply {
                 set(Calendar.HOUR_OF_DAY, 23)
                 set(Calendar.MINUTE, 59)
                 set(Calendar.SECOND, 59)
                 set(Calendar.MILLISECOND, 999)
             }
-            val endTime = calendar.timeInMillis
+            val startTime = startCalendar.timeInMillis
+            val endTime = endCalendar.timeInMillis
 
-            // Query usage stats and process apps usage
-            val aggregatedOriginal = usageStatsManager.queryAndAggregateUsageStats(startTime, endTime)
+            // Replace aggregatedOriginal call with INTERVAL_DAILY based query:
+            val usageStatsList = usageStatsManager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY, startTime, endTime
+            )
+            // Filter stats to include only those that actually belong to the current day
+            val filteredStatsList = usageStatsList.filter { it.lastTimeUsed in startTime..endTime }
+            val aggregatedOriginal = mutableMapOf<String, Long>()
+            filteredStatsList.forEach { stats ->
+                aggregatedOriginal[stats.packageName] =
+                    (aggregatedOriginal[stats.packageName] ?: 0L) + stats.totalTimeInForeground
+            }
+
             var totalScreenTime = 0L
             val appsArray: WritableArray = Arguments.createArray()
-            for ((pkg, usage) in aggregatedOriginal) {
-                totalScreenTime += usage.totalTimeInForeground
-                if (usage.totalTimeInForeground > 0) {
+            for ((pkg, usageTimeRaw) in aggregatedOriginal) {
+                // Optionally clamp individual app usage if needed:
+                val usageTime = if (usageTimeRaw > MAX_DAILY_MS) MAX_DAILY_MS else usageTimeRaw
+                totalScreenTime += usageTime
+                if (usageTime > 0) {
                     val appMap = Arguments.createMap()
-                    // Map package name to friendly social app name if applicable.
                     appMap.putString("name", mapToSocialAppName(pkg))
-                    appMap.putDouble("screenTime", usage.totalTimeInForeground.toDouble())
+                    appMap.putDouble("screenTime", usageTime.toDouble())
                     appsArray.pushMap(appMap)
                 }
             }
+            
+            // Cap the total screen time to MAX_DAILY_MS (24 hours)
+            if (totalScreenTime > MAX_DAILY_MS) totalScreenTime = MAX_DAILY_MS
 
             // Count unlock events
             var unlocks = 0

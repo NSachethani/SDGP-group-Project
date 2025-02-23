@@ -8,6 +8,7 @@ import {
   NativeModules,
   ScrollView,
   TouchableOpacity,
+  RefreshControl, // <--- new import
 } from "react-native";
 import React, { useState, useEffect, useMemo } from "react";
 import { Picker } from "@react-native-picker/picker";
@@ -55,21 +56,32 @@ export default function home() {
   const [selectedOption, setSelectedOption] = useState("Daily");
   const [usageData, setUsageData] = useState<any[]>([]);
   const [selectedDay, setSelectedDay] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false); // new state
 
-  useEffect(() => {
+  // Extracted function to fetch usage data
+  const fetchUsageData = () => {
     ScreenTimeModule.checkAndRequestUsageAccess()
       .then(() => ScreenTimeModule.getUsageData())
       .then((data: any) => {
         setUsageData(data.days);
         if (data.days && data.days.length > 0) {
-          // Assume the first element is today's data.
           setSelectedDay(data.days[0]);
         }
       })
       .catch((err: any) => {
         console.warn(err);
       });
+  };
+
+  useEffect(() => {
+    fetchUsageData();
   }, []);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchUsageData();
+    setRefreshing(false);
+  };
 
   // Set containerHeight to match the actual progressContainer height (50)
   const containerHeight = 50;
@@ -86,7 +98,11 @@ export default function home() {
         style={{ flex: 1 }}
       >
         <SafeAreaView>
-          <ScrollView>
+          <ScrollView
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          >
             {/* Top header with title and picker */}
             <View className="flex flex-row justify-between items-center">
               <Text className="text-3xl font-rubik-semibold text-black ml-4 mt-6">
