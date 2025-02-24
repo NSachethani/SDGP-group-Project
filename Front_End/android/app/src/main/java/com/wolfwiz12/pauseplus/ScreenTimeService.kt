@@ -60,7 +60,7 @@ object ScreenTimeService {
             val startTime = startCalendar.timeInMillis
             val endTime = endCalendar.timeInMillis
 
-            // Replace aggregatedOriginal call with INTERVAL_DAILY based query:
+            // aggregatedOriginal call with INTERVAL_DAILY based query:
             val usageStatsList = usageStatsManager.queryUsageStats(
                 UsageStatsManager.INTERVAL_DAILY, startTime, endTime
             )
