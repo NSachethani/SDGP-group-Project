@@ -61,6 +61,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+
+    "extra": {
+      "oneSignalAppId": "<1902ad14-5703-46af-8df8-e2a291f67ab6>"
     }
   }
 }

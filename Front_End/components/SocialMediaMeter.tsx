@@ -2,7 +2,7 @@ import React, { useState, useMemo } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Svg, { Circle, G } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
-import AppTimer from "../app/(auth)/app-timer";
+import AppTimer from "../app/(root)/(usage-timer)/app-timer";
 import { router } from "expo-router";
 
 // List of social media apps to report. Use lower-case names.
@@ -168,7 +168,7 @@ export default function SocialMediaMeter({ appsData }: SocialMediaMeterProps) {
       <TouchableOpacity
         style={styles.reminderButton}
         onPress={() => {
-          router.replace("/(auth)/app-timer");
+          router.replace("/(root)/(usage-timer)/app-timer");
         }}
       >
         <Text style={styles.reminderButtonText}>Set app usage reminder</Text>
