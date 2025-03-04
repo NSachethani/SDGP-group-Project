@@ -1,8 +1,27 @@
 import React, { useState } from 'react';
 import { Image, ImageBackground, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Alert, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function GameField() {
+interface UserProgress {
+  completedCoins: string[];
+  coins: number;
+  hearts: number;
+  treasureClaimed: boolean;
+  nextHeartTime: string | null;
+}
+
+interface GameFieldProps {
+  userId: string;
+}
+
+interface GameFieldProps {
+  userId: string;
+}
+
+
+
+export default function GameField({ userId }: GameFieldProps) {
   // State to manage the visibility of the text box for the book icon
   const [isTextBoxVisible, setIsTextBoxVisible] = useState(false);
 
@@ -35,7 +54,6 @@ export default function GameField() {
   const toggleTextBox = () => {
     setIsTextBoxVisible(!isTextBoxVisible);
   };
-
   const toggleCoin1TextBox = () => {
     setIsCoin1TextVisible(!isCoin1TextVisible);
   };
@@ -52,11 +70,12 @@ export default function GameField() {
     setShowHeartModal(!showHeartModal);
   };
   
-  const buyHeart = () => {
+  const buyHeart = async () => {
     if (coins >= 10) {
-      setCoins(coins - 10);
-      setHearts(hearts + 1);
+      setCoins(prevCoins => prevCoins - 10);
+      setHearts(prevHearts => prevHearts + 1);
       Alert.alert("Success!", "You bought 1 heart!");
+      await saveProgress();
     } else {
       Alert.alert("Not enough coins!", "You need 10 coins to buy a heart.");
     }
@@ -68,39 +87,86 @@ export default function GameField() {
     }
   };
   
-  const claimTreasure = () => {
-    setCoins(coins + 50);
+  const claimTreasure = async () => {
+    setCoins(prevCoins => prevCoins + 50);
     setTreasureClaimed(true);
     setShowTreasureModal(false);
     Alert.alert("Success!", "You claimed 50 coins!");
+    await saveProgress();
   };
+
+React.useEffect(() => {
+  saveProgress();
+}, [hearts, coins, completedCoins, treasureClaimed, nextHeartTime, userId]);
 
   React.useEffect(() => {
     let timer: NodeJS.Timeout;
     
     const updateHeartTimer = () => {
-      if (hearts < 3 && nextHeartTime) {
-        const now = new Date();
-        const timeDiff = nextHeartTime.getTime() - now.getTime();
-        
-        if (timeDiff <= 0) {
-          setHearts(prev => Math.min(prev + 1, 3));
-          if (hearts < 2) {
-            setNextHeartTime(new Date(Date.now() + 10 * 60 * 1000));
+      try {
+        if (hearts < 3 && nextHeartTime) {
+          const now = new Date();
+          const timeDiff = nextHeartTime.getTime() - now.getTime();
+          
+          if (timeDiff <= 0) {
+            setHearts(prev => Math.min(prev + 1, 3));
+            if (hearts < 2) {
+              setNextHeartTime(new Date(Date.now() + 10 * 60 * 1000));
+            } else {
+              setNextHeartTime(null);
+            }
           } else {
-            setNextHeartTime(null);
+            const minutes = Math.floor(timeDiff / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            setTimeUntilNextHeart(`${minutes}:${seconds.toString().padStart(2, '0')}`);
           }
-        } else {
-          const minutes = Math.floor(timeDiff / (1000 * 60));
-          const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-          setTimeUntilNextHeart(`${minutes}:${seconds.toString().padStart(2, '0')}`);
         }
+      } catch (error) {
+        console.error('Error updating heart timer:', error);
       }
     };
   
     timer = setInterval(updateHeartTimer, 1000);
     return () => clearInterval(timer);
   }, [hearts, nextHeartTime]);
+
+  const saveProgress = async () => {
+    try {
+      const progress: UserProgress = {
+        completedCoins,
+        coins,
+        hearts,
+        treasureClaimed,
+        nextHeartTime: nextHeartTime?.toISOString() || null
+      };
+      await AsyncStorage.setItem(`userProgress_${userId}`, JSON.stringify(progress));
+    } catch (error) {
+      console.error('Error saving progress:', error);
+    }
+  };
+
+  const loadProgress = async () => {
+    try {
+      const savedProgress = await AsyncStorage.getItem(`userProgress_${userId}`);
+      if (savedProgress) {
+        const progress: UserProgress = JSON.parse(savedProgress);
+        setCompletedCoins(progress.completedCoins);
+        setCoins(progress.coins);
+        setHearts(progress.hearts);
+        setTreasureClaimed(progress.treasureClaimed);
+        if (progress.nextHeartTime) {
+          setNextHeartTime(new Date(progress.nextHeartTime));
+        }
+      }
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  };
+
+  React.useEffect(() => {
+    loadProgress();
+  }, []);
+
 
 
   const questions = {
@@ -214,13 +280,6 @@ export default function GameField() {
     if (hearts > 0) {
       setSelectedCoin(coinId);
       setShowQuestion(true);
-      setHearts(prev => {
-        const newHearts = prev - 1;
-        if (newHearts < 3 && !nextHeartTime) {
-          setNextHeartTime(new Date(Date.now() + 10 * 60 * 1000));
-        }
-        return newHearts;
-      });
     } else {
       Alert.alert(
         "No Hearts Left!", 
@@ -229,10 +288,21 @@ export default function GameField() {
     }
   };
   
-  const handleAnswer = (selectedOption: number, correctOption: number | undefined) => {
+  const handleAnswer = async (selectedOption: number, correctOption: number | undefined) => {
+    // Reduce heart after answering (correct or wrong)
+    setHearts(prev => {
+      const newHearts = prev - 1;
+      if (newHearts < 3 && !nextHeartTime) {
+        setNextHeartTime(new Date(Date.now() + 10 * 60 * 1000));
+      }
+      return newHearts;
+    });
+  
     if (selectedOption === correctOption) {
       if (selectedCoin) {
-        setCompletedCoins([...completedCoins, selectedCoin]);
+        const newCompletedCoins = [...completedCoins, selectedCoin];
+        setCompletedCoins(newCompletedCoins);
+        // Removed the setCoins line to remove the 2-coin bonus
       }
       Alert.alert("Correct!", "Well done!");
     } else {
@@ -240,8 +310,8 @@ export default function GameField() {
     }
     setShowQuestion(false);
     setSelectedCoin(null);
+    await saveProgress();
   };
-
 
   return (
     <View style={styles.container}>
