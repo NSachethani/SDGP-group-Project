@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { Image, ImageBackground, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
 import { Alert, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Animated } from 'react-native';
+import { router } from 'expo-router';
+
 
 interface UserProgress {
   completedCoins: string[];
@@ -15,13 +18,15 @@ interface GameFieldProps {
   userId: string;
 }
 
-interface GameFieldProps {
-  userId: string;
-}
-
-
-
 export default function GameField({ userId }: GameFieldProps) {
+
+  const handleRankPress = () => {
+    router.push('/(root)/ranking');
+  };
+
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const rotateAnim = React.useRef(new Animated.Value(0)).current;
+
   // State to manage the visibility of the text box for the book icon
   const [isTextBoxVisible, setIsTextBoxVisible] = useState(false);
 
@@ -35,7 +40,7 @@ export default function GameField({ userId }: GameFieldProps) {
   const [showQuestion, setShowQuestion] = useState(false);
   const [completedCoins, setCompletedCoins] = useState<string[]>([]);
 
-  const [hearts, setHearts] = useState(4);
+  const [hearts, setHearts] = useState(3);
   const [coins, setCoins] = useState(0);
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [showHeartModal, setShowHeartModal] = useState(false);
@@ -58,9 +63,23 @@ export default function GameField({ userId }: GameFieldProps) {
     setIsCoin1TextVisible(!isCoin1TextVisible);
   };
 
-  const updateUnitNumber = () => {
-    setUnitNumber((prevUnitNumber) => (prevUnitNumber === 1 ? 2 : 1)); // Toggle between 1 and 2
-  };
+  const updateUnitNumber = React.useCallback(() => {
+    if (isTransitioning) return;
+    
+    setIsTransitioning(true);
+    
+    Animated.sequence([
+      Animated.timing(rotateAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start(() => {
+      setUnitNumber(prev => (prev === 1 ? 2 : 1));
+      rotateAnim.setValue(0);
+      setIsTransitioning(false);
+    });
+  }, [isTransitioning, rotateAnim]);
 
   const toggleCoinModal = () => {
     setShowCoinModal(!showCoinModal);
@@ -104,17 +123,14 @@ React.useEffect(() => {
     
     const updateHeartTimer = () => {
       try {
-        if (hearts < 3 && nextHeartTime) {
+        if (nextHeartTime) {
           const now = new Date();
           const timeDiff = nextHeartTime.getTime() - now.getTime();
           
           if (timeDiff <= 0) {
-            setHearts(prev => Math.min(prev + 1, 3));
-            if (hearts < 2) {
-              setNextHeartTime(new Date(Date.now() + 10 * 60 * 1000));
-            } else {
-              setNextHeartTime(null);
-            }
+            setHearts(prev => prev + 1);
+            // Change to 60 minutes (60 * 60 * 1000 milliseconds)
+            setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
           } else {
             const minutes = Math.floor(timeDiff / (1000 * 60));
             const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
@@ -289,11 +305,11 @@ React.useEffect(() => {
   };
   
   const handleAnswer = async (selectedOption: number, correctOption: number | undefined) => {
-    // Reduce heart after answering (correct or wrong)
     setHearts(prev => {
       const newHearts = prev - 1;
-      if (newHearts < 3 && !nextHeartTime) {
-        setNextHeartTime(new Date(Date.now() + 10 * 60 * 1000));
+      if (!nextHeartTime) {
+        // Change to 60 minutes
+        setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
       }
       return newHearts;
     });
@@ -302,7 +318,6 @@ React.useEffect(() => {
       if (selectedCoin) {
         const newCompletedCoins = [...completedCoins, selectedCoin];
         setCompletedCoins(newCompletedCoins);
-        // Removed the setCoins line to remove the 2-coin bonus
       }
       Alert.alert("Correct!", "Well done!");
     } else {
@@ -312,6 +327,12 @@ React.useEffect(() => {
     setSelectedCoin(null);
     await saveProgress();
   };
+
+  const sectionIntroText = `Welcome to the Section 01! 🎮
+
+Start your coding journey by collecting coins and answering questions. Each coin holds a question about web development basics. You have 3 hearts - use them wisely!
+
+Complete all questions to unlock special rewards. Good luck! 🌟`;
 
   return (
     <View style={styles.container}>
@@ -335,7 +356,12 @@ React.useEffect(() => {
             </View>
           </TouchableOpacity>
 
-          <Image source={require('@/assets/images/rank3.png')} style={styles.rankBadge} />
+          <TouchableOpacity onPress={handleRankPress}>
+          <Image 
+            source={require('@/assets/images/rank3.png')} 
+            style={styles.rankBadge} 
+          />
+        </TouchableOpacity>
         </View>
 
         <View style={styles.sectionHeader}>
@@ -353,18 +379,46 @@ React.useEffect(() => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={updateUnitNumber}>
-          <Image
-            source={unitNumber === 1
-              ? require('@/assets/images/arrow.png')
-              : require('@/assets/images/upArrow.png')}
-            style={styles.arrowIcon}
-          />
-        </TouchableOpacity>
+        <TouchableOpacity 
+  onPress={updateUnitNumber}
+  disabled={isTransitioning}
+  style={{ opacity: isTransitioning ? 0.5 : 1 }}
+>
+<Animated.Image
+  source={unitNumber === 2  // Changed from unitNumber === 1
+    ? require('@/assets/images/upArrow.png')
+    : require('@/assets/images/arrow.png')}
+  style={[
+    styles.arrowIcon,
+    {
+      transform: [{
+        rotate: rotateAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['0deg', '180deg']
+        })
+      }]
+    }
+  ]}
+/>
+</TouchableOpacity>
 
         {isTextBoxVisible && (
           <View style={styles.textBox}>
-            <Text style={styles.textBoxText}>Section Intro..</Text>
+            <TouchableOpacity 
+              onPress={toggleTextBox}
+              style={styles.closeButton}
+            >
+              <Image 
+                source={require('@/assets/images/close.png')} 
+                style={styles.closeIcon} 
+              />
+            </TouchableOpacity>
+            <Image
+              source={require('@/assets/images/book.png')}
+              style={styles.textBoxIcon}
+            />
+            <Text style={styles.textBoxTitle}>Section Introduction</Text>
+            <Text style={styles.textBoxText}>{sectionIntroText}</Text>
           </View>
         )}
 
@@ -508,12 +562,6 @@ React.useEffect(() => {
           </>
         )}
 
-      {isCoin1TextVisible && (
-        <View style={styles.textBox}>
-          <Text style={styles.textBoxText}>Hello!</Text>
-        </View>
-      )}
-
       <TouchableOpacity 
         onPress={toggleTreasureModal}
         disabled={treasureClaimed}
@@ -607,32 +655,36 @@ React.useEffect(() => {
       </Modal>
 
       <Modal
-        visible={showHeartModal}
-        transparent={true}
-        animationType="slide"
+  visible={showHeartModal}
+  transparent={true}
+  animationType="slide"
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <TouchableOpacity 
+        onPress={toggleHeartModal}
+        style={styles.closeButton}
       >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity 
-              onPress={toggleHeartModal}
-              style={styles.closeButton}
-            >
-              <Image 
-                source={require('@/assets/images/close.png')} 
-                style={styles.closeIcon} 
-              />
-            </TouchableOpacity>
-            <Text style={styles.modalTitle}>Hearts</Text>
-            <Text style={styles.modalText}>Current Hearts: {hearts}</Text>
-            <TouchableOpacity 
-              style={[styles.modalButton, coins < 10 && styles.disabledButton]}
-              onPress={buyHeart}
-            >
-              <Text style={styles.buttonText}>Buy Heart (10 coins)</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+        <Image 
+          source={require('@/assets/images/close.png')} 
+          style={styles.closeIcon} 
+        />
+      </TouchableOpacity>
+      <Text style={styles.modalTitle}>Hearts</Text>
+      <Text style={styles.modalText}>Current Hearts: {hearts}</Text>
+      {nextHeartTime && (
+        <Text style={styles.timerText}>Next heart in: {timeUntilNextHeart}</Text>
+      )}
+      <TouchableOpacity 
+        style={[styles.modalButton, coins < 10 && styles.disabledButton]}
+        onPress={buyHeart}
+        disabled={coins < 10}
+      >
+        <Text style={styles.buttonText}>Buy Heart (10 coins)</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
       <Modal
         visible={showTreasureModal}
         transparent={true}
@@ -673,42 +725,6 @@ React.useEffect(() => {
           </View>
         </View>
       </Modal>
-
-      ```tsx
-<Modal
-  visible={showHeartModal}
-  transparent={true}
-  animationType="slide"
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      <TouchableOpacity 
-        onPress={toggleHeartModal}
-        style={styles.closeButton}
-      >
-        <Image 
-          source={require('@/assets/images/close.png')} 
-          style={styles.closeIcon} 
-        />
-      </TouchableOpacity>
-      <Text style={styles.modalTitle}>Hearts</Text>
-      <Text style={styles.modalText}>Current Hearts: {hearts}/3</Text>
-      {hearts < 3 && nextHeartTime && (
-        <Text style={styles.timerText}>Next heart in: {timeUntilNextHeart}</Text>
-      )}
-      <TouchableOpacity 
-        style={[styles.modalButton, coins < 10 && styles.disabledButton]}
-        onPress={buyHeart}
-        disabled={hearts >= 3}
-      >
-        <Text style={styles.buttonText}>
-          {hearts >= 3 ? "Hearts Full!" : "Buy Heart (10 coins)"}
-        </Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
-
       </ImageBackground>
 
       <View style={styles.horizontalLine} />
@@ -834,20 +850,37 @@ const styles = StyleSheet.create({
   },
   textBox: {
     position: 'absolute',
-    top: '40%',
+    top: '20%',
     left: '10%',
     right: '10%',
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 10,
-    padding: 20,
-    elevation: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 15,
+    padding: 25,
+    elevation: 5,
     alignItems: 'center',
     zIndex: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(168, 216, 234, 0.5)',
+  },
+  textBoxIcon: {
+    width: 50,
+    height: 50,
+    resizeMode: 'contain',
+    marginBottom: 15,
+  },
+  textBoxTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: 'rgba(99, 14, 156, 1)',
+    marginBottom: 15,
+    textAlign: 'center',
   },
   textBoxText: {
     fontSize: 16,
-    color: 'rgba(99, 14, 156, 1)',
-    textAlign: 'center',
+    color: '#333',
+    textAlign: 'left',
+    lineHeight: 24,
+    padding: 10,
   },
 
   modalContainer: {
@@ -992,6 +1025,7 @@ treasureBoxClaimed: {
     position: 'absolute',
     bottom: 0,
   },
+
   arrowIcon: {
     position: 'absolute',
     top: 265,
@@ -999,6 +1033,7 @@ treasureBoxClaimed: {
     width: 70,
     height: 70,
     resizeMode: 'contain',
+    backfaceVisibility: 'hidden', 
   },
   
   timerText: {

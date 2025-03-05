@@ -2,6 +2,25 @@ import { View, Text, Image } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
 import icons from "@/constants/icon";
+import { Stack } from "expo-router";
+
+const Layout = () => {
+  return (
+    <Stack>
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="(usage-timer)" options={{ headerShown: false }} />
+      <Stack.Screen 
+        name="ranking" 
+        options={{ 
+          headerShown: false,
+          presentation: 'modal'
+        }} 
+      />
+    </Stack>
+  );
+};
+
+
 const TabIcon = ({
   focused,
   icon,
