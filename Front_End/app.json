@@ -16,6 +16,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": [
+        "android.permission.RECEIVE_BOOT_COMPLETED"
+      ],
       "package": "com.wolfwiz12.pauseplus"
     },
     "web": {

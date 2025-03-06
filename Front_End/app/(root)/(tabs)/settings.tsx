@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { useClerk } from "@clerk/clerk-expo";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const settings = () => {
   const { signOut } = useClerk(); // useClerk returns the clerk instance
@@ -9,6 +10,8 @@ const settings = () => {
   const handleLogout = async () => {
     try {
       await signOut();
+      // Remove session token from storage
+      await AsyncStorage.removeItem("sessionToken");
       router.replace("/(auth)/sign-in"); // redirect to login page
     } catch (error) {
       console.error("Error signing out:", error);

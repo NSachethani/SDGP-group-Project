@@ -8,6 +8,7 @@ import { LogLevel, OneSignal } from "react-native-onesignal";
 import {
   startFrequentRefresh,
   stopFrequentRefresh,
+  scheduleBackgroundTask,
 } from "@/components/NotificationManager";
 
 const TASK_NAME = "BACKGROUND_NOTIFICATION_TASK";
@@ -50,6 +51,10 @@ export default function App() {
     // Stop refresh when component unmounts
     
   }, []);
+  useEffect(() => {
+    scheduleBackgroundTask();
+  }, []);
+
   if (isSignedIn) {
     return <Redirect href={"/(root)/(tabs)/home"} />;
   }
