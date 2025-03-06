@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, FlatList, ImageBackground } from 'react-native';
 
 interface UserItem {
   rank: number;
@@ -12,10 +12,6 @@ const RankingScreen = () => {
     { rank: 1, name: 'User not found', xp: 0 },
     { rank: 2, name: 'User not found', xp: 0 },
     { rank: 3, name: 'User not found', xp: 0 },
-    { rank: 4, name: 'User not found', xp: 0 },
-    { rank: 5, name: 'User not found', xp: 0 },
-    { rank: 6, name: 'User not found', xp: 0 },
-    { rank: 7, name: 'User not found', xp: 0 },
   ];
 
   const renderUser = ({ item }: { item: UserItem }) => (
@@ -33,40 +29,50 @@ const RankingScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>World Ranking</Text>
-      </View>
-      <View style={styles.achievementSection}>
-        <Image
-          source={require('@/assets/images/rank3.png')}
-          style={styles.badge}
+    <ImageBackground
+      source={require('@/assets/images/backImg.jpg')}
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>World Ranking</Text>
+        </View>
+        <View style={styles.achievementSection}>
+          <Image
+            source={require('@/assets/images/rank3.png')}
+            style={styles.badge}
+          />
+          <Text style={styles.rankTitle}>Elite Master</Text>
+          <Text style={styles.subtitle}>You finished #1 last week in your rank</Text>
+        </View>
+        <FlatList
+          data={users}
+          renderItem={renderUser}
+          keyExtractor={(item) => item.rank.toString()}
+          contentContainerStyle={styles.list}
         />
-        <Text style={styles.rankTitle}>Elite Master</Text>
-        <Text style={styles.subtitle}>You finished #8 last week in your rank</Text>
       </View>
-      <FlatList
-        data={users}
-        renderItem={renderUser}
-        keyExtractor={(item) => item.rank.toString()}
-        contentContainerStyle={styles.list}
-      />
-    </View>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F9',
     paddingTop: 40,
+    backgroundColor: 'transparent', 
   },
   header: {
-    backgroundColor: '#D8E6FF',
+    backgroundColor: 'rgba(216, 230, 255, 0.9)', 
+    borderRadius: 15,
     padding: 20,
     marginLeft: 20,
     marginRight: 20,
-    
     alignItems: 'center',
   },
   headerTitle: {
@@ -100,7 +106,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,

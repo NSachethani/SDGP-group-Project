@@ -51,6 +51,14 @@ export default function GameField({ userId }: GameFieldProps) {
   const [nextHeartTime, setNextHeartTime] = useState<Date | null>(null);
   const [timeUntilNextHeart, setTimeUntilNextHeart] = useState<string>('');
 
+  const [showBreathingModal, setShowBreathingModal] = useState(false);
+  const [isExerciseStarted, setIsExerciseStarted] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [breathingPhase, setBreathingPhase] = useState<'in' | 'out' | ''>('');
+  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes in seconds
+  const breathingAnimation = React.useRef(new Animated.Value(1)).current;
+  const [isExerciseCompleted, setIsExerciseCompleted] = useState(false);
+
   const handleCloseQuestion = () => {
     setShowQuestion(false);
     setSelectedCoin(null);
@@ -328,6 +336,78 @@ React.useEffect(() => {
     await saveProgress();
   };
 
+  const handleSpeakerPress = () => {
+    setShowBreathingModal(true);
+  };
+  
+  const startBreathingExercise = () => {
+    setIsExerciseStarted(true);
+    setIsExerciseCompleted(false); // Reset completion state
+    let secondsLeft = 120;
+  
+    const breatheIn = () => {
+      setBreathingPhase('in');
+      Animated.timing(breathingAnimation, {
+        toValue: 1.5,
+        duration: 4000,
+        useNativeDriver: true,
+      }).start(() => {
+        breatheOut();
+      });
+    };
+  
+    const breatheOut = () => {
+      setBreathingPhase('out');
+      Animated.timing(breathingAnimation, {
+        toValue: 1,
+        duration: 4000,
+        useNativeDriver: true,
+      }).start(() => {
+        if (secondsLeft > 0) {
+          breatheIn();
+        }
+      });
+    };
+  
+    breatheIn();
+  
+    const timer = setInterval(() => {
+      secondsLeft -= 1;
+      setTimeRemaining(secondsLeft);
+      
+      if (secondsLeft <= 0) {
+        clearInterval(timer);
+        setIsExerciseStarted(false);
+        setBreathingPhase('');
+        breathingAnimation.setValue(1);
+        setIsExerciseCompleted(true); // Set exercise as completed
+      }
+    }, 1000);
+  
+    return () => clearInterval(timer);
+  };
+  
+  const handleDone = async () => {
+    // Reduce heart count
+    setHearts(prev => {
+      const newHearts = prev - 1;
+      if (!nextHeartTime) {
+        setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
+      }
+      return newHearts;
+    });
+  
+    // Close modal and reset states
+    setShowBreathingModal(false);
+    setIsExerciseStarted(false);
+    setBreathingPhase('');
+    setProgress(0);
+    setTimeRemaining(120);
+  
+    // Save progress after reducing heart
+    await saveProgress();
+  };
+
   const sectionIntroText = `Welcome to the Section 01! 🎮
 
 Start your coding journey by collecting coins and answering questions. Each coin holds a question about web development basics. You have 3 hearts - use them wisely!
@@ -487,9 +567,12 @@ Complete all questions to unlock special rewards. Good luck! 🌟`;
                 style={[styles.coin, styles.coin1]}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={toggleCoin1TextBox} style={[styles.coinContainer, styles.speakerIcon]}>
+            <TouchableOpacity 
+            onPress={handleSpeakerPress} 
+            style={[styles.coinContainer, styles.speakerIcon]}
+          >
             <Image source={require('@/assets/images/speaker.png')} style={styles.speakerIcon} />
-            </TouchableOpacity>
+          </TouchableOpacity>
           </>
         ) : (
           <>
@@ -725,6 +808,69 @@ Complete all questions to unlock special rewards. Good luck! 🌟`;
           </View>
         </View>
       </Modal>
+      <Modal
+  visible={showBreathingModal}
+  transparent={true}
+  animationType="slide"
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      {!isExerciseCompleted && (
+        <TouchableOpacity 
+          onPress={() => setShowBreathingModal(false)}
+          style={styles.closeButton}
+        >
+          <Image 
+            source={require('@/assets/images/close.png')} 
+            style={styles.closeIcon} 
+          />
+        </TouchableOpacity>
+      )}
+
+      <Text style={styles.breathingTitle}>Breathing Exercise</Text>
+      
+      {!isExerciseStarted && !isExerciseCompleted ? (
+        <TouchableOpacity 
+          style={styles.startButton}
+          onPress={startBreathingExercise}
+        >
+          <Text style={styles.startButtonText}>Start Exercise</Text>
+        </TouchableOpacity>
+      ) : isExerciseCompleted ? (
+        <View style={styles.exerciseContainer}>
+          <Text style={styles.breathingText}>Well done!</Text>
+          <TouchableOpacity 
+            style={styles.doneButton}
+            onPress={handleDone}
+          >
+            <Text style={styles.doneButtonText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.exerciseContainer}>
+          <Text style={styles.breathingText}>
+            {breathingPhase === 'in' ? 'Breathe In..' : 'Breathe Out..'}
+          </Text>
+          
+          <Animated.Image
+            source={require('@/assets/images/breathe.png')}
+            style={[
+              styles.breatheImage,
+              {
+                transform: [{ scale: breathingAnimation }]
+              }
+            ]}
+          />
+          
+          <Text style={styles.timerText}>
+            Time remaining: {Math.floor(timeRemaining / 60)}:
+            {(timeRemaining % 60).toString().padStart(2, '0')}
+          </Text>
+        </View>
+      )}
+    </View>
+  </View>
+</Modal>
       </ImageBackground>
 
       <View style={styles.horizontalLine} />
@@ -960,6 +1106,70 @@ const styles = StyleSheet.create({
     left: '58%',
     resizeMode: 'contain',
   },
+
+breatheImage: {
+  width: 200,
+  height: 200,
+  resizeMode: 'contain',
+  marginVertical: 20,
+},
+breathingTitle: {
+  fontSize: 24,
+  fontWeight: 'bold',
+  color: '#333',
+  textAlign: 'center',
+  marginVertical: 20,
+},
+startButton: {
+  backgroundColor: '#A8D8EA',
+  paddingVertical: 15,
+  paddingHorizontal: 30,
+  borderRadius: 25,
+  marginTop: 20,
+},
+startButtonText: {
+  fontSize: 18,
+  color: '#333',
+  textAlign: 'center',
+  fontWeight: 'bold',
+},
+exerciseContainer: {
+  alignItems: 'center',
+  padding: 20,
+},
+breathingText: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  fontStyle: 'italic',
+  color: 'purple',
+  marginBottom: 20,
+},
+progressBarContainer: {
+  width: '100%',
+  height: 20,
+  backgroundColor: '#eee',
+  borderRadius: 10,
+  overflow: 'hidden',
+  marginBottom: 20,
+},
+progressBar: {
+  height: '100%',
+  backgroundColor: '#A8D8EA',
+  borderRadius: 10,
+},
+doneButton: {
+  backgroundColor: '#4CAF50',
+  paddingVertical: 15,
+  paddingHorizontal: 30,
+  borderRadius: 25,
+  marginTop: 20,
+},
+doneButtonText: {
+  fontSize: 18,
+  color: 'white',
+  textAlign: 'center',
+  fontWeight: 'bold',
+},
   treasureBox: {
     width: 90,
     height: 90,
