@@ -46,11 +46,11 @@ const RankingScreen = () => {
   // Update getBadgeImage function to return correct badges based on XP
   const getBadgeImage = (xp: number) => {
     if (xp >= 500) {
-      return require('@/assets/images/rank3.png');
+      return require('@/assets/images/gold.png');
     } else if (xp >= 100) {
-      return require('@/assets/images/rank3.png');
+      return require('@/assets/images/silver.png');
     } else {
-      return require('@/assets/images/rank3.png');
+      return require('@/assets/images/bronze.png');
     }
   };
 
@@ -59,9 +59,9 @@ const RankingScreen = () => {
     if (xp >= 500) {
       return 'Elite Master';
     } else if (xp >= 100) {
-      return 'Second Master';
+      return 'Advanced Warrior';
     } else {
-      return 'First Master';
+      return 'Skilled Fighter';
     }
   };
 
@@ -136,14 +136,14 @@ const styles = StyleSheet.create({
     marginVertical: 20,
   },
   badge: {
-    width: 80,
-    height: 80,
+    width: 150,
+    height:150,
     resizeMode: 'contain',
   },
   rankTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#FF8C42',
+    fontSize: 22,
+    fontWeight: '900',
+    color: 'red',
     marginVertical: 10,
   },
   list: {
@@ -172,11 +172,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
     marginRight: 10,
-    backgroundColor: '#EAEAEA',
   },
   userName: {
     fontSize: 14,

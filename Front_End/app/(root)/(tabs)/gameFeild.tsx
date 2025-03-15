@@ -212,103 +212,103 @@ React.useEffect(() => {
     unit1: [
       {
         id: 'coin1',
-        question: "What does HTML stand for?",
+        question: "What is the primary benefit of a social media detox?",
         options: [
-          "Hyper Text Markup Language",
-          "High Tech Modern Language",
-          "Hyper Transfer Markup Level"
-        ],
-        correct: 0
-      },
-      {
-        id: 'coin2',
-        question: "Which tag is used for creating a hyperlink?",
-        options: [
-          "<link>",
-          "<a>",
-          "<href>"
+          "Increased screen time",
+          "Improved mental well-being",
+          "More social media followers"
         ],
         correct: 1
       },
       {
-        id: 'coin3',
-        question: "What is the correct HTML element for the largest heading?",
+        id: 'coin2',
+        question: "How can reducing social media use improve sleep quality?",
         options: [
-          "<heading>",
-          "<h6>",
-          "<h1>"
+          "It prevents excessive exposure to blue light before bed",
+          "It makes your phone battery last longer",
+          "It forces you to sleep in a different room"
+        ],
+        correct: 0
+      },
+      {
+        id: 'coin3',
+        question: "What is a common negative effect of excessive social media use?",
+        options: [
+          "Increased focus and productivity",
+          "Reduced stress levels",
+          "Higher risk of anxiety and depression"
         ],
         correct: 2
       },
       {
         id: 'coin4',
-        question: "Which HTML attribute is used to define inline styles?",
+        question: "What is one effective way to reduce social media usage?",
         options: [
-          "style",
-          "css",
-          "format"
+          "Keeping your phone within reach at all times",
+          "Turning off notifications",
+          "Following more influencers"
         ],
-        correct: 0
+        correct: 1
       },
       {
         id: 'coin5',
-        question: "Which HTML element defines the title of a document?",
+        question: "How can social media detoxing help with productivity?",
         options: [
-          "<meta>",
-          "<head>",
-          "<title>"
+          "By increasing distractions",
+          "By allowing more time for meaningful tasks",
+          "By making scrolling faster"
         ],
-        correct: 2
+        correct: 1
       }
     ],
     unit2: [
       {
         id: 'coin1Unit2',
-        question: "What is CSS?",
+        question: "Which of the following is a good offline alternative to scrolling social media?",
         options: [
-          "Computer Style Sheets",
-          "Cascading Style Sheets",
-          "Creative Style System"
+          "Binge-watching TV shows",
+          "Reading a book",
+          "Checking social media once every hour"
         ],
         correct: 1
       },
       {
         id: 'coin2Unit2',
-        question: "Which property is used to change text color?",
+        question: "What is a recommended first step when starting a social media detox?",
         options: [
-          "text-color",
-          "font-color",
-          "color"
-        ],
-        correct: 2
-      },
-      {
-        id: 'coin3Unit2',
-        question: "How do you add a background color?",
-        options: [
-          "background-color",
-          "bgcolor",
-          "color-background"
-        ],
-        correct: 0
-      },
-      {
-        id: 'coin4Unit2',
-        question: "Which CSS property controls text size?",
-        options: [
-          "text-size",
-          "font-size",
-          "text-style"
+          "Deleting all your accounts immediately",
+          "Setting a time limit for daily use",
+          "Buying a new phone"
         ],
         correct: 1
       },
       {
-        id: 'coin5Unit2',
-        question: "How to make text bold in CSS?",
+        id: 'coin3Unit2',
+        question: "What is a sign that you may need a social media detox?",
         options: [
-          "font-weight: bold",
-          "text-bold: true",
-          "bold: true"
+          "You feel happy and productive after using social media",
+          "You constantly compare yourself to others online",
+          "You only use social media for work-related tasks"
+        ],
+        correct: 1
+      },
+      {
+        id: 'coin4Unit2',
+        question: "How does excessive social media use affect real-life relationships?",
+        options: [
+          "It improves face-to-face communication",
+          "It creates more meaningful interactions",
+          "It can lead to disconnection from family and friends"
+        ],
+        correct: 2
+      },
+      {
+        id: 'coin5Unit2',
+        question: "What is a benefit of spending less time on social media?",
+        options: [
+          "Increased creativity and mindfulness",
+          "Decreased free time",
+          "Higher screen time hours"
         ],
         correct: 0
       }
@@ -456,11 +456,7 @@ React.useEffect(() => {
     Alert.alert("Exercise Complete!", "Well done! +10 XP");
   };
 
-  const sectionIntroText = `Welcome to the Section 01! 🎮
-
-Start your coding journey by collecting coins and answering questions. Each coin holds a question about web development basics. You have 3 hearts - use them wisely!
-
-Complete all questions to unlock special rewards. Good luck! 🌟`;
+  const sectionIntroText = 'Welcome to Section 01! 🌟 Collect hearts and answering questions on social media detox and digital wellness. Engage in mindful activities like quizzes, breathing exercises, and motivational guidance. You have 3 hearts—use them wisely! Complete all tasks to unlock rewards and enhance your digital well-being. Ready to begin? 🎮✨';
 
 const playMotivationalSpeech = async () => {
   // Check if audio task is completed
@@ -540,6 +536,16 @@ const handleAudioComplete = async () => {
   Alert.alert("Audio Complete!", "Well done! +10 XP");
 };
 
+const getBadgeImage = (xp: number) => {
+  if (xp >= 500) {
+    return require('@/assets/images/gold.png');
+  } else if (xp >= 100) {
+    return require('@/assets/images/silver.png');
+  } else {
+    return require('@/assets/images/bronze.png');
+  }
+};
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -563,11 +569,11 @@ const handleAudioComplete = async () => {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={handleRankPress}>
-          <Image 
-            source={require('@/assets/images/rank3.png')} 
-            style={styles.rankBadge} 
-          />
-        </TouchableOpacity>
+            <Image 
+              source={getBadgeImage(xp)} 
+              style={styles.rankBadge} 
+            />
+          </TouchableOpacity>
         </View>
 
         <View style={styles.sectionHeader}>
@@ -1155,8 +1161,8 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
   rankBadge: {
-    width: 80,
-    height: 40,
+    width: 100,
+    height: 60,
     resizeMode: 'contain',
   },
 
