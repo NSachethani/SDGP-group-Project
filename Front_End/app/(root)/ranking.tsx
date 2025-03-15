@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ImageBackground } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 
 interface UserItem {
   rank: number;
@@ -8,11 +10,60 @@ interface UserItem {
 }
 
 const RankingScreen = () => {
+  const [currentUserXP, setCurrentUserXP] = useState<number>(0);
+
+  // Update useFocusEffect to be more responsive
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadUserXP = async () => {
+        try {
+          const savedProgress = await AsyncStorage.getItem('userProgress_1');
+          if (savedProgress) {
+            const progress = JSON.parse(savedProgress);
+            setCurrentUserXP(progress.xp || 0);
+            console.log('Current XP:', progress.xp);
+          }
+        } catch (error) {
+          console.error('Error loading XP:', error);
+        }
+      };
+
+      // Load XP immediately when screen comes into focus
+      loadUserXP();
+
+      // Set up interval to check for XP updates
+      const interval = setInterval(loadUserXP, 500);
+      return () => clearInterval(interval);
+    }, [])
+  );
+
   const users: UserItem[] = [
     { rank: 1, name: 'User not found', xp: 0 },
     { rank: 2, name: 'User not found', xp: 0 },
     { rank: 3, name: 'User not found', xp: 0 },
   ];
+
+  // Update getBadgeImage function to return correct badges based on XP
+  const getBadgeImage = (xp: number) => {
+    if (xp >= 500) {
+      return require('@/assets/images/rank3.png');
+    } else if (xp >= 100) {
+      return require('@/assets/images/rank3.png');
+    } else {
+      return require('@/assets/images/rank3.png');
+    }
+  };
+
+  // Function to determine rank title based on XP
+  const getRankTitle = (xp: number) => {
+    if (xp >= 500) {
+      return 'Elite Master';
+    } else if (xp >= 100) {
+      return 'Second Master';
+    } else {
+      return 'First Master';
+    }
+  };
 
   const renderUser = ({ item }: { item: UserItem }) => (
     <View style={styles.userRow}>
@@ -20,7 +71,7 @@ const RankingScreen = () => {
       <View style={styles.userInfo}>
         <Image
           style={styles.avatar}
-          source={require('@/assets/images/rank3.png')}
+          source={getBadgeImage(item.xp)}
         />
         <Text style={styles.userName}>{item.name}</Text>
       </View>
@@ -40,11 +91,11 @@ const RankingScreen = () => {
         </View>
         <View style={styles.achievementSection}>
           <Image
-            source={require('@/assets/images/rank3.png')}
+            source={getBadgeImage(currentUserXP)}
             style={styles.badge}
           />
-          <Text style={styles.rankTitle}>Elite Master</Text>
-          <Text style={styles.subtitle}>You finished #1 last week in your rank</Text>
+          <Text style={styles.rankTitle}>{getRankTitle(currentUserXP)}</Text>
+          <Text style={styles.subtitle}>Current XP: {currentUserXP}</Text>
         </View>
         <FlatList
           data={users}
@@ -95,10 +146,6 @@ const styles = StyleSheet.create({
     color: '#FF8C42',
     marginVertical: 10,
   },
-  subtitle: {
-    fontSize: 14,
-    color: '#6A6A6A',
-  },
   list: {
     paddingHorizontal: 20,
   },
@@ -139,6 +186,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#6A6A6A',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#6A6A6A',
+    fontWeight: '500',
   },
 });
 

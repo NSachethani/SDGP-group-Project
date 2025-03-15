@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Image, ImageBackground, StyleSheet, View, Text, TouchableOpacity } from 'react-native';
+import { Image, ImageBackground, StyleSheet, View, Text, TouchableOpacity, GestureResponderEvent } from 'react-native';
 import { Alert, Modal } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Animated } from 'react-native';
 import { router } from 'expo-router';
+import { Audio } from 'expo-av';
 
 
 interface UserProgress {
@@ -12,6 +13,7 @@ interface UserProgress {
   hearts: number;
   treasureClaimed: boolean;
   nextHeartTime: string | null;
+  xp: number;
 }
 
 interface GameFieldProps {
@@ -59,6 +61,15 @@ export default function GameField({ userId }: GameFieldProps) {
   const breathingAnimation = React.useRef(new Animated.Value(1)).current;
   const [isExerciseCompleted, setIsExerciseCompleted] = useState(false);
 
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showAudioModal, setShowAudioModal] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const [audioDuration, setAudioDuration] = useState(0);
+  const [isAudioCompleted, setIsAudioCompleted] = useState(false);
+
+  const [xp, setXp] = useState<number>(0);
+  
   const handleCloseQuestion = () => {
     setShowQuestion(false);
     setSelectedCoin(null);
@@ -156,14 +167,16 @@ React.useEffect(() => {
 
   const saveProgress = async () => {
     try {
-      const progress: UserProgress = {
+      const progress = {
         completedCoins,
         coins,
         hearts,
         treasureClaimed,
-        nextHeartTime: nextHeartTime?.toISOString() || null
+        nextHeartTime: nextHeartTime?.toISOString() || null,
+        xp
       };
-      await AsyncStorage.setItem(`userProgress_${userId}`, JSON.stringify(progress));
+      await AsyncStorage.setItem('userProgress_1', JSON.stringify(progress));
+      console.log('Saved progress - XP:', xp);
     } catch (error) {
       console.error('Error saving progress:', error);
     }
@@ -171,27 +184,29 @@ React.useEffect(() => {
 
   const loadProgress = async () => {
     try {
-      const savedProgress = await AsyncStorage.getItem(`userProgress_${userId}`);
+      const savedProgress = await AsyncStorage.getItem('userProgress_1');
       if (savedProgress) {
         const progress: UserProgress = JSON.parse(savedProgress);
-        setCompletedCoins(progress.completedCoins);
-        setCoins(progress.coins);
-        setHearts(progress.hearts);
-        setTreasureClaimed(progress.treasureClaimed);
+        setCompletedCoins(progress.completedCoins || []);
+        setCoins(progress.coins || 0);
+        setHearts(progress.hearts || 3);
+        setTreasureClaimed(progress.treasureClaimed || false);
+        setXp(progress.xp || 0);
         if (progress.nextHeartTime) {
           setNextHeartTime(new Date(progress.nextHeartTime));
         }
+      } else {
+        // Initialize with default values if no progress exists
+        setCompletedCoins([]);
+        setCoins(0);
+        setHearts(3);
+        setTreasureClaimed(false);
+        setXp(0);
       }
     } catch (error) {
       console.error('Error loading progress:', error);
     }
   };
-
-  React.useEffect(() => {
-    loadProgress();
-  }, []);
-
-
 
   const questions = {
     unit1: [
@@ -301,6 +316,13 @@ React.useEffect(() => {
   };
 
   const handleCoinPress = (coinId: string) => {
+    // First check if the task is already completed
+    if (completedCoins.includes(coinId)) {
+      Alert.alert("Already Completed!", "You have already completed this task!");
+      return;
+    }
+  
+    // If not completed, check for hearts
     if (hearts > 0) {
       setSelectedCoin(coinId);
       setShowQuestion(true);
@@ -313,31 +335,50 @@ React.useEffect(() => {
   };
   
   const handleAnswer = async (selectedOption: number, correctOption: number | undefined) => {
-    setHearts(prev => {
-      const newHearts = prev - 1;
-      if (!nextHeartTime) {
-        // Change to 60 minutes
-        setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
-      }
-      return newHearts;
-    });
-  
     if (selectedOption === correctOption) {
       if (selectedCoin) {
         const newCompletedCoins = [...completedCoins, selectedCoin];
         setCompletedCoins(newCompletedCoins);
+        
+        // Increment XP by 10
+        const newXp = xp + 10;
+        setXp(newXp);
+        
+        // Save progress immediately
+        await saveProgress();
+        Alert.alert("Correct!", "Well done! +10 XP");
       }
-      Alert.alert("Correct!", "Well done!");
     } else {
       Alert.alert("Wrong Answer", "Try again!");
     }
+  
+    setHearts(prev => {
+      const newHearts = prev - 1;
+      if (!nextHeartTime) {
+        setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
+      }
+      return newHearts;
+    });
+    
     setShowQuestion(false);
     setSelectedCoin(null);
-    await saveProgress();
   };
 
   const handleSpeakerPress = () => {
-    setShowBreathingModal(true);
+    // Check if breathing exercise is completed
+    if (completedCoins.includes('breathing')) {
+      Alert.alert("Already Completed!", "You have already completed this breathing exercise!");
+      return;
+    }
+  
+    if (hearts > 0) {
+      setShowBreathingModal(true);
+    } else {
+      Alert.alert(
+        "No Hearts Left!", 
+        `Wait ${timeUntilNextHeart} minutes for next heart or buy more hearts.`
+      );
+    }
   };
   
   const startBreathingExercise = () => {
@@ -388,7 +429,6 @@ React.useEffect(() => {
   };
   
   const handleDone = async () => {
-    // Reduce heart count
     setHearts(prev => {
       const newHearts = prev - 1;
       if (!nextHeartTime) {
@@ -397,15 +437,23 @@ React.useEffect(() => {
       return newHearts;
     });
   
-    // Close modal and reset states
+    // Add breathing exercise to completed tasks
+    setCompletedCoins(prev => [...prev, 'breathing']);
+  
+    // Update XP and save immediately
+    setXp(prevXp => {
+      const newXp = prevXp + 10;
+      saveProgress();
+      return newXp;
+    });
+  
     setShowBreathingModal(false);
     setIsExerciseStarted(false);
     setBreathingPhase('');
     setProgress(0);
     setTimeRemaining(120);
   
-    // Save progress after reducing heart
-    await saveProgress();
+    Alert.alert("Exercise Complete!", "Well done! +10 XP");
   };
 
   const sectionIntroText = `Welcome to the Section 01! 🎮
@@ -413,6 +461,84 @@ React.useEffect(() => {
 Start your coding journey by collecting coins and answering questions. Each coin holds a question about web development basics. You have 3 hearts - use them wisely!
 
 Complete all questions to unlock special rewards. Good luck! 🌟`;
+
+const playMotivationalSpeech = async () => {
+  // Check if audio task is completed
+  if (completedCoins.includes('audio')) {
+    Alert.alert("Already Completed!", "You have already completed this motivational speech!");
+    return;
+  }
+
+  if (hearts > 0) {
+    setShowAudioModal(true);
+    try {
+      // Unload any existing sound before creating a new one
+      if (sound) {
+        await sound.unloadAsync();
+        setSound(null);
+      }
+      
+      const { sound: newSound } = await Audio.Sound.createAsync(
+        require('@/assets/audio/motivation.mp3'),
+        { shouldPlay: false },
+        (status) => {
+          if (status.isLoaded) {
+            if (status.durationMillis) {
+              setAudioProgress(status.positionMillis / status.durationMillis);
+            }
+            if (status.didJustFinish) {
+              setIsPlaying(false);
+              setIsAudioCompleted(true);
+            }
+          }
+        }
+      );
+      setSound(newSound);
+      const status = await newSound.getStatusAsync();
+      if (status.isLoaded && status.durationMillis) {
+        setAudioDuration(status.durationMillis / 1000);
+      }
+    } catch (error) {
+      console.error('Error loading sound:', error);
+    }
+  } else {
+    Alert.alert(
+      "No Hearts Left!", 
+      `Wait ${timeUntilNextHeart} minutes for next heart or buy more hearts.`
+    );
+  }
+};
+
+const handleAudioComplete = async () => {
+  if (sound) {
+    await sound.unloadAsync();
+  }
+  setSound(null);
+  setIsPlaying(false);
+  setIsAudioCompleted(false);
+  setShowAudioModal(false);
+  setAudioProgress(0);
+
+  // Add audio task to completed tasks
+  setCompletedCoins(prev => [...prev, 'audio']);
+
+  // Update XP and save immediately
+  setXp(prevXp => {
+    const newXp = prevXp + 10;
+    saveProgress();
+    return newXp;
+  });
+
+  setHearts(prev => {
+    const newHearts = prev - 1;
+    if (!nextHeartTime) {
+      setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
+    }
+    return newHearts;
+  });
+
+  Alert.alert("Audio Complete!", "Well done! +10 XP");
+};
 
   return (
     <View style={styles.container}>
@@ -571,7 +697,7 @@ Complete all questions to unlock special rewards. Good luck! 🌟`;
             onPress={handleSpeakerPress} 
             style={[styles.coinContainer, styles.speakerIcon]}
           >
-            <Image source={require('@/assets/images/speaker.png')} style={styles.speakerIcon} />
+            <Image source={require('@/assets/images/breatheicon.png')} style={styles.breatheicon} />
           </TouchableOpacity>
           </>
         ) : (
@@ -639,8 +765,17 @@ Complete all questions to unlock special rewards. Good luck! 🌟`;
                 style={[styles.coin, styles.coin1Unit2]}
               />
             </TouchableOpacity>
-            <TouchableOpacity onPress={toggleCoin1TextBox} style={[styles.coinContainer, styles.speakerIconUnit2]}>
-            <Image source={require('@/assets/images/speaker.png')} style={styles.speakerIconUnit2} />
+            <TouchableOpacity 
+              onPress={playMotivationalSpeech} 
+              style={[styles.coinContainer, styles.speakerIconUnit2]}
+            >
+              <Image 
+                source={require('@/assets/images/speaker.png')} 
+                style={[
+                  styles.speakerIconUnit2,
+                  isPlaying && styles.activeSpeaker
+                ]} 
+              />
             </TouchableOpacity>
           </>
         )}
@@ -866,6 +1001,106 @@ Complete all questions to unlock special rewards. Good luck! 🌟`;
             Time remaining: {Math.floor(timeRemaining / 60)}:
             {(timeRemaining % 60).toString().padStart(2, '0')}
           </Text>
+        </View>
+      )}
+    </View>
+  </View>
+</Modal>
+<Modal
+  visible={showAudioModal}
+  transparent={true}
+  animationType="slide"
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      {!isAudioCompleted && !isPlaying && (
+        <TouchableOpacity 
+          onPress={() => {
+            if (sound) {
+              sound.unloadAsync();
+            }
+            setShowAudioModal(false);
+            setIsPlaying(false);
+          }}
+          style={styles.closeButton}
+        >
+          <Image 
+            source={require('@/assets/images/close.png')} 
+            style={styles.closeIcon} 
+          />
+        </TouchableOpacity>
+      )}
+
+      <Text style={styles.modalTitle}>Listen and Get Motivated!</Text>
+      
+      {!isPlaying && !isAudioCompleted ? (
+        <TouchableOpacity 
+          style={styles.startButton}
+          onPress={async () => {
+            try {
+              if (sound) {
+                await sound.playAsync();
+                setIsPlaying(true);
+              }
+            } catch (error) {
+              console.error('Error playing sound:', error);
+            }
+          }}
+        >
+          <Text style={styles.startButtonText}>Start Listening</Text>
+        </TouchableOpacity>
+      ) : isAudioCompleted ? (
+        <View style={styles.completionContainer}>
+          <Text style={styles.completionText}>Well done!</Text>
+          <TouchableOpacity 
+            style={styles.doneButton}
+            onPress={handleAudioComplete}
+          >
+            <Text style={styles.doneButtonText}>Done</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={styles.audioControlsContainer}>
+          <View style={styles.progressBarContainer}>
+            <View 
+              style={[
+                styles.progressBar, 
+                { width: `${audioProgress * 100}%` }
+              ]} 
+            />
+          </View>
+          
+          <Text style={styles.timerText}>
+            {Math.floor((audioProgress * audioDuration) / 60)}:
+            {Math.floor((audioProgress * audioDuration) % 60).toString().padStart(2, '0')} / 
+            {Math.floor(audioDuration / 60)}:
+            {Math.floor(audioDuration % 60).toString().padStart(2, '0')}
+          </Text>
+
+          <TouchableOpacity 
+            style={styles.audioControlButton}
+            onPress={async () => {
+              if (sound) {
+                if (isPlaying) {
+                  await sound.pauseAsync();
+                } else {
+                  await sound.playAsync();
+                }
+                setIsPlaying(!isPlaying);
+              }
+            }}
+          >
+            <Image 
+              source={isPlaying ? 
+                require('@/assets/images/pause.png') : 
+                require('@/assets/images/play.png')
+              } 
+              style={styles.audioControlIcon} 
+            />
+            <Text style={styles.audioControlText}>
+              {isPlaying ? 'Pause' : 'Continue'}
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -1107,127 +1342,228 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
 
-breatheImage: {
-  width: 200,
-  height: 200,
-  resizeMode: 'contain',
-  marginVertical: 20,
+audioControlsContainer: {
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 20,
 },
-breathingTitle: {
-  fontSize: 24,
-  fontWeight: 'bold',
-  color: '#333',
-  textAlign: 'center',
-  marginVertical: 20,
-},
-startButton: {
+audioControlButton: {
   backgroundColor: '#A8D8EA',
+  flexDirection: 'row',
+  alignItems: 'center',
   paddingVertical: 15,
   paddingHorizontal: 30,
   borderRadius: 25,
   marginTop: 20,
 },
-startButtonText: {
+audioControlIcon: {
+  width: 24,
+  height: 24,
+  marginRight: 10,
+  tintColor: '#333',
+},
+audioControlText: {
   fontSize: 18,
   color: '#333',
-  textAlign: 'center',
   fontWeight: 'bold',
-},
-exerciseContainer: {
-  alignItems: 'center',
-  padding: 20,
-},
-breathingText: {
-  fontSize: 20,
-  fontWeight: 'bold',
-  fontStyle: 'italic',
-  color: 'purple',
-  marginBottom: 20,
 },
 progressBarContainer: {
   width: '100%',
-  height: 20,
+  height: 10,
   backgroundColor: '#eee',
-  borderRadius: 10,
+  borderRadius: 5,
+  marginVertical: 20,
   overflow: 'hidden',
-  marginBottom: 20,
 },
 progressBar: {
   height: '100%',
   backgroundColor: '#A8D8EA',
-  borderRadius: 10,
+  borderRadius: 5,
 },
-doneButton: {
-  backgroundColor: '#4CAF50',
-  paddingVertical: 15,
-  paddingHorizontal: 30,
-  borderRadius: 25,
+completionContainer: {
+  alignItems: 'center',
+  padding: 20,
+},
+completionText: {
+  fontSize: 24,
+  fontWeight: 'bold',
+  color: '#4CAF50',
+  marginBottom: 20,
+},
+activeSpeaker: {
+  opacity: 0.7,
+  transform: [{ scale: 1.1 }]
+},
+playPauseButton: {
+  backgroundColor: '#A8D8EA',
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  justifyContent: 'center',
+  alignItems: 'center',
   marginTop: 20,
 },
-doneButtonText: {
-  fontSize: 18,
-  color: 'white',
-  textAlign: 'center',
-  fontWeight: 'bold',
+playPauseIcon: {
+  width: 30,
+  height: 30,
+  resizeMode: 'contain',
 },
-  treasureBox: {
-    width: 90,
-    height: 90,
-    position: 'absolute',
-    top:250,
-    right: -50,
-    resizeMode: 'contain',
-  },
-  
-treasureModalContent: {
+buttonContainer: {
   alignItems: 'center',
-  paddingTop: 30,
-  paddingBottom: 30,
-  backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  marginVertical: 20,
 },
-congratsImage: {
-  width: 200,
-  height: 100,
+audioButton: {
+  backgroundColor: '#A8D8EA',
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+audioButtonIcon: {
+  width: 30,
+  height: 30,
   resizeMode: 'contain',
-  marginBottom: 20,
 },
-treasureTitle: {
-  fontSize: 28,
+audioTitle: {
+  fontSize: 24,
   fontWeight: 'bold',
-  color: '#FFD700',
-  textAlign: 'center',
-  marginBottom: 20,
-  textShadowColor: 'rgba(0, 0, 0, 0.2)',
-  textShadowOffset: { width: 1, height: 1 },
-  textShadowRadius: 2,
-},
-treasureCoinImage: {
-  width: 80,
-  height: 80,
-  resizeMode: 'contain',
-  marginBottom: 10,
-},
-treasureText: {
-  fontSize: 22,
   color: '#333',
   textAlign: 'center',
+  marginTop: 20,
   marginBottom: 30,
 },
-claimButton: {
-  backgroundColor: '#4CAF50',
-  paddingHorizontal: 40,
-  paddingVertical: 15,
-  borderRadius: 25,
-  elevation: 5,
-},
-claimButtonText: {
-  color: 'white',
-  fontSize: 18,
-  fontWeight: 'bold',
-},
-treasureBoxClaimed: {
-  opacity: 0.5,
-},
+
+  breatheicon:{
+    width: 75,
+    height: 75,
+    position: 'absolute',
+    top: '45%',
+    left: '58%',
+    resizeMode: 'contain',
+  },
+
+  breatheImage: {
+    width: 200,
+    height: 200,
+    resizeMode: 'contain',
+    marginVertical: 20,
+  },
+  breathingTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginVertical: 20,
+  },
+  startButton: {
+    backgroundColor: '#A8D8EA',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  startButtonText: {
+    fontSize: 18,
+    color: '#333',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+  exerciseContainer: {
+    alignItems: 'center',
+    padding: 20,
+  },
+  breathingText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    fontStyle: 'italic',
+    color: 'purple',
+    marginBottom: 20,
+  },
+  breathingProgressContainer: {
+    width: '100%',
+    height: 20,
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  breathingProgressBar: {
+    height: '100%',
+    backgroundColor: '#A8D8EA',
+    borderRadius: 10,
+  },
+  doneButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+    marginTop: 20,
+  },
+  doneButtonText: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
+    fontWeight: 'bold',
+  },
+    treasureBox: {
+      width: 90,
+      height: 90,
+      position: 'absolute',
+      top:250,
+      right: -50,
+      resizeMode: 'contain',
+    },
+    
+  treasureModalContent: {
+    alignItems: 'center',
+    paddingTop: 30,
+    paddingBottom: 30,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+  },
+  congratsImage: {
+    width: 200,
+    height: 100,
+    resizeMode: 'contain',
+    marginBottom: 20,
+  },
+  treasureTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#FFD700',
+    textAlign: 'center',
+    marginBottom: 20,
+    textShadowColor: 'rgba(0, 0, 0, 0.2)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  treasureCoinImage: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  treasureText: {
+    fontSize: 22,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 30,
+  },
+  claimButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 40,
+    paddingVertical: 15,
+    borderRadius: 25,
+    elevation: 5,
+  },
+  claimButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  treasureBoxClaimed: {
+    opacity: 0.5,
+  },
   horizontalLine: {
     height: 2,
     width: '100%',
