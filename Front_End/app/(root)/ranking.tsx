@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import Slider from '@react-native-community/slider';
+import { useUser } from '@clerk/clerk-expo';  // Add this import
 
 interface UserItem {
   rank: number;
@@ -12,6 +12,19 @@ interface UserItem {
 
 const RankingScreen = () => {
   const [currentUserXP, setCurrentUserXP] = useState<number>(0);
+  const { user } = useUser(); // Add this to get current user
+
+  // Add this function to format the user's name
+  const formatUserName = (fullName: string | null | undefined) => {
+    if (!fullName) return 'Loading...';
+    
+    const nameParts = fullName.trim().split(' ');
+    if (nameParts.length === 1) return nameParts[0];
+    
+    const firstName = nameParts[0];
+    const lastName = nameParts[nameParts.length - 1];
+    return `${firstName} ${lastName}`;
+  };
 
   // Update useFocusEffect to be more responsive
   useFocusEffect(
@@ -38,8 +51,13 @@ const RankingScreen = () => {
     }, [])
   );
 
+  // Update the users array to use the formatted name
   const users: UserItem[] = [
-    { rank: 1, name: 'User not found', xp: 0 },
+    { 
+      rank: 1, 
+      name: formatUserName(user?.fullName || user?.username), 
+      xp: currentUserXP 
+    },
     { rank: 2, name: 'User not found', xp: 0 },
     { rank: 3, name: 'User not found', xp: 0 },
   ];
@@ -67,14 +85,22 @@ const RankingScreen = () => {
   };
 
   const renderUser = ({ item }: { item: UserItem }) => (
-    <View style={styles.userRow}>
+    <View style={[
+      styles.userRow,
+      item.rank === 1 ? styles.currentUserRow : null // Add highlight for current user
+    ]}>
       <Text style={styles.rankText}>#{item.rank}</Text>
       <View style={styles.userInfo}>
         <Image
           style={styles.avatar}
           source={getBadgeImage(item.xp)}
         />
-        <Text style={styles.userName}>{item.name}</Text>
+        <Text style={[
+          styles.userName,
+          item.rank === 1 ? styles.currentUserName : null // Add highlight for current user name
+        ]}>
+          {item.name}
+        </Text>
       </View>
       <Text style={styles.xpText}>{item.xp} XP</Text>
     </View>
@@ -191,6 +217,13 @@ const styles = StyleSheet.create({
     color: '#6A6A6A',
     fontWeight: '500',
   },
+  currentUserRow: {
+    backgroundColor: 'rgba(168, 216, 234, 0.5)', // Light blue background for current user
+  },
+  currentUserName: {
+    color: '#000000',
+    fontWeight: 'bold',
+  }
 });
 
 export default RankingScreen;
