@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Animated } from 'react-native';
 import { router } from 'expo-router';
 import { Audio } from 'expo-av';
+import Slider from '@react-native-community/slider';
 
 
 interface UserProgress {
@@ -37,6 +38,8 @@ export default function GameField({ userId }: GameFieldProps) {
 
   // State to manage the unit number
   const [unitNumber, setUnitNumber] = useState(1);
+
+  const [volume, setVolume] = useState(1.0);
 
   const [selectedCoin, setSelectedCoin] = useState<string | null>(null);
   const [showQuestion, setShowQuestion] = useState(false);
@@ -378,6 +381,17 @@ React.useEffect(() => {
         "No Hearts Left!", 
         `Wait ${timeUntilNextHeart} minutes for next heart or buy more hearts.`
       );
+    }
+  };
+
+  const adjustVolume = async (newVolume: number) => {
+    try {
+      if (sound) {
+        await sound.setVolumeAsync(newVolume);
+        setVolume(newVolume);
+      }
+    } catch (error) {
+      console.error('Error adjusting volume:', error);
     }
   };
   
@@ -1037,6 +1051,29 @@ const getBadgeImage = (xp: number) => {
         </TouchableOpacity>
       )}
 
+      {isPlaying && (
+        <View style={styles.volumeControlContainer}>
+          <Image 
+            source={require('@/assets/images/soundLow.png')} 
+            style={styles.volumeIcon} 
+          />
+          <Slider
+            style={styles.volumeSlider}
+            minimumValue={0}
+            maximumValue={1}
+            value={volume}
+            onValueChange={adjustVolume}
+            minimumTrackTintColor="#A8D8EA"
+            maximumTrackTintColor="#000000"
+            thumbTintColor="#A8D8EA"
+          />
+          <Image 
+            source={require('@/assets/images/soundHigh.png')} 
+            style={styles.volumeIcon} 
+          />
+        </View>
+      )}
+
       <Text style={styles.modalTitle}>Listen and Get Motivated!</Text>
       
       {!isPlaying && !isAudioCompleted ? (
@@ -1372,6 +1409,23 @@ audioControlText: {
   fontSize: 18,
   color: '#333',
   fontWeight: 'bold',
+},
+volumeControlContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingHorizontal: 20,
+  marginTop: 10,
+},
+volumeSlider: {
+  flex: 1,
+  height: 40,
+  marginHorizontal: 10,
+},
+volumeIcon: {
+  width: 24,
+  height: 24,
+  resizeMode: 'contain',
 },
 progressBarContainer: {
   width: '100%',
