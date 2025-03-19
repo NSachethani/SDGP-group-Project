@@ -212,51 +212,51 @@ React.useEffect(() => {
     unit1: [
       {
         id: 'coin1',
-        question: "What is the primary benefit of a social media detox?",
+        question: "What can you do to start a digital detox journey?",
         options: [
-          "Increased screen time",
-          "Improved mental well-being",
-          "More social media followers"
+          "Delete all social media apps immediately",
+          "Set specific time limits for app usage",
+          "Block all your online friends"
         ],
         correct: 1
       },
       {
         id: 'coin2',
-        question: "How can reducing social media use improve sleep quality?",
+        question: "Which activity can help reduce phone addiction?",
         options: [
-          "It prevents excessive exposure to blue light before bed",
-          "It makes your phone battery last longer",
-          "It forces you to sleep in a different room"
+          "Practice mindful meditation",
+          "Watch more YouTube videos",
+          "Check notifications frequently"
         ],
         correct: 0
       },
       {
         id: 'coin3',
-        question: "What is a common negative effect of excessive social media use?",
+        question: "How can you improve your morning routine?",
         options: [
-          "Increased focus and productivity",
-          "Reduced stress levels",
-          "Higher risk of anxiety and depression"
+          "Check social media first thing",
+          "Set multiple alarms on your phone",
+          "Avoid phone use for the first hour"
         ],
         correct: 2
       },
       {
         id: 'coin4',
-        question: "What is one effective way to reduce social media usage?",
+        question: "What's a healthy way to manage social media?",
         options: [
-          "Keeping your phone within reach at all times",
-          "Turning off notifications",
-          "Following more influencers"
+          "Post everything you do",
+          "Set designated 'phone-free' times",
+          "Keep notifications always on"
         ],
         correct: 1
       },
       {
         id: 'coin5',
-        question: "How can social media detoxing help with productivity?",
+        question: "Which is a sign of digital wellness?",
         options: [
-          "By increasing distractions",
-          "By allowing more time for meaningful tasks",
-          "By making scrolling faster"
+          "Feeling anxious without your phone",
+          "Being present in real-life moments",
+          "Constantly checking likes"
         ],
         correct: 1
       }
@@ -264,51 +264,51 @@ React.useEffect(() => {
     unit2: [
       {
         id: 'coin1Unit2',
-        question: "Which of the following is a good offline alternative to scrolling social media?",
+        question: "What helps create better sleep habits?",
         options: [
-          "Binge-watching TV shows",
-          "Reading a book",
-          "Checking social media once every hour"
+          "Scrolling before bed",
+          "No screen time before bedtime",
+          "Sleeping with phone nearby"
         ],
         correct: 1
       },
       {
         id: 'coin2Unit2',
-        question: "What is a recommended first step when starting a social media detox?",
+        question: "How can you improve focus?",
         options: [
-          "Deleting all your accounts immediately",
-          "Setting a time limit for daily use",
-          "Buying a new phone"
+          "Keep all notifications on",
+          "Use 'Do Not Disturb' mode",
+          "Check email every 5 minutes"
         ],
         correct: 1
       },
       {
         id: 'coin3Unit2',
-        question: "What is a sign that you may need a social media detox?",
+        question: "What's a healthy social media habit?",
         options: [
-          "You feel happy and productive after using social media",
-          "You constantly compare yourself to others online",
-          "You only use social media for work-related tasks"
+          "Comparing yourself to others",
+          "Setting boundaries for usage",
+          "Following trending topics 24/7"
         ],
         correct: 1
       },
       {
         id: 'coin4Unit2',
-        question: "How does excessive social media use affect real-life relationships?",
+        question: "Which activity promotes digital balance?",
         options: [
-          "It improves face-to-face communication",
-          "It creates more meaningful interactions",
-          "It can lead to disconnection from family and friends"
+          "Endless scrolling",
+          "Constant status updates",
+          "Regular outdoor activities"
         ],
         correct: 2
       },
       {
         id: 'coin5Unit2',
-        question: "What is a benefit of spending less time on social media?",
+        question: "What helps maintain digital mindfulness?",
         options: [
-          "Increased creativity and mindfulness",
-          "Decreased free time",
-          "Higher screen time hours"
+          "Regular screen breaks",
+          "Increased screen time",
+          "Multiple device usage"
         ],
         correct: 0
       }
