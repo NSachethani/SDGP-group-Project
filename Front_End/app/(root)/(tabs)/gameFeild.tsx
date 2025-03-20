@@ -113,6 +113,7 @@ export default function GameField({ userId }: GameFieldProps) {
   
   const buyHeart = async () => {
     if (coins >= 10) {
+      await playCoinSound(); // Add this line
       setCoins(prevCoins => prevCoins - 10);
       setHearts(prevHearts => prevHearts + 1);
       Alert.alert("Success!", "You bought 1 heart!");
@@ -129,6 +130,7 @@ export default function GameField({ userId }: GameFieldProps) {
   };
   
   const claimTreasure = async () => {
+    await playCoinSound(); // Add this line
     setCoins(prevCoins => prevCoins + 50);
     setTreasureClaimed(true);
     setShowTreasureModal(false);
@@ -496,7 +498,7 @@ const playMotivationalSpeech = async () => {
             if (status.durationMillis) {
               setAudioProgress(status.positionMillis / status.durationMillis);
             }
-            if (status.didJustFinish) {
+            if ('isLoaded' in status && status.isLoaded && status.didJustFinish) {
               setIsPlaying(false);
               setIsAudioCompleted(true);
             }
@@ -557,6 +559,24 @@ const getBadgeImage = (xp: number) => {
     return require('@/assets/images/silver.png');
   } else {
     return require('@/assets/images/bronze.png');
+  }
+};
+
+const playCoinSound = async () => {
+  try {
+    const { sound } = await Audio.Sound.createAsync(
+      require('@/assets/audio/coin.mp3'),
+      { shouldPlay: true }
+    );
+    await sound.playAsync();
+    // Unload sound after playing
+    sound.setOnPlaybackStatusUpdate(async (status) => {
+      if ('isLoaded' in status && status.isLoaded && status.didJustFinish) {
+        await sound.unloadAsync();
+      }
+    });
+  } catch (error) {
+    console.error('Error playing coin sound:', error);
   }
 };
 
@@ -800,18 +820,19 @@ const getBadgeImage = (xp: number) => {
           </>
         )}
 
-      <TouchableOpacity 
-        onPress={toggleTreasureModal}
-        disabled={treasureClaimed}
-      >
-        <Image 
-          source={require('@/assets/images/goldCrate.png')} 
-          style={[
-            styles.treasureBox,
-            treasureClaimed && styles.treasureBoxClaimed
-          ]} 
-        />
-      </TouchableOpacity>
+        <TouchableOpacity 
+          onPress={toggleTreasureModal}
+          disabled={treasureClaimed}
+          style={[styles.treasureBoxContainer]} // Add new style
+        >
+          <Image 
+            source={require('@/assets/images/goldCrate.png')} 
+            style={[
+              styles.treasureBox,
+              treasureClaimed && styles.treasureBoxClaimed
+            ]} 
+          />
+        </TouchableOpacity>
 
 
         <Modal
@@ -1567,14 +1588,22 @@ audioTitle: {
     fontWeight: 'bold',
   },
     treasureBox: {
-      width: 90,
-      height: 90,
+      width: '130%',
+      height: '130%',
       position: 'absolute',
-      top:250,
-      right: -50,
+      top:420,
+      right: 150,
       resizeMode: 'contain',
     },
-    
+    treasureBoxContainer: {
+      position: 'absolute',
+      top: 250,
+      right: 0,
+      width: 90,
+      height: 90,
+      zIndex: 1, 
+      padding: 10, 
+    },
   treasureModalContent: {
     alignItems: 'center',
     paddingTop: 30,

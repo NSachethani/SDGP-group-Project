@@ -87,7 +87,7 @@ const RankingScreen = () => {
   const renderUser = ({ item }: { item: UserItem }) => (
     <View style={[
       styles.userRow,
-      item.rank === 1 ? styles.currentUserRow : null // Add highlight for current user
+      item.rank === 1 ? styles.currentUserRow : null
     ]}>
       <Text style={styles.rankText}>#{item.rank}</Text>
       <View style={styles.userInfo}>
@@ -95,14 +95,21 @@ const RankingScreen = () => {
           style={styles.avatar}
           source={getBadgeImage(item.xp)}
         />
-        <Text style={[
-          styles.userName,
-          item.rank === 1 ? styles.currentUserName : null // Add highlight for current user name
-        ]}>
-          {item.name}
-        </Text>
+        <View style={styles.nameContainer}>
+          <Text style={[
+            styles.userName,
+            item.rank === 1 ? styles.currentUserName : null
+          ]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+          >
+            {item.name}
+          </Text>
+        </View>
       </View>
-      <Text style={styles.xpText}>{item.xp} XP</Text>
+      <View style={styles.xpContainer}>
+        <Text style={styles.xpText}>{item.xp} XP</Text>
+      </View>
     </View>
   );
 
@@ -178,39 +185,50 @@ const styles = StyleSheet.create({
   },
   userRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginVertical: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.35)',
+    borderRadius: 12,
+    width: '100%',
   },
   rankText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
+    width: 40, // Fixed width for rank
+    textAlign: 'center',
   },
   userInfo: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  avatar: {
-    width: 50,
-    height: 50,
     marginRight: 10,
   },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  nameContainer: {
+    flex: 1,
+    paddingRight: 10,
+  },
   userName: {
-    fontSize: 14,
-    color: '#4A4A4A',
+    fontSize: 16,
+    color: '#333',
+    flexWrap: 'wrap',
+  },
+  xpContainer: {
+    width: 70, // Fixed width for XP
+    alignItems: 'flex-end',
   },
   xpText: {
     fontSize: 14,
-    fontWeight: '500',
-    color: '#6A6A6A',
+    color: '#666',
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 16,
@@ -218,7 +236,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   currentUserRow: {
-    backgroundColor: 'rgba(168, 216, 234, 0.5)', // Light blue background for current user
+    backgroundColor: 'rgba(168, 216, 234, 0.67)', // Light blue background for current user
   },
   currentUserName: {
     color: '#000000',
