@@ -580,6 +580,20 @@ const playCoinSound = async () => {
   }
 };
 
+// Add this function near the top of your component, after state declarations
+const formatTimeRemaining = (timeInMinutes: number, timeInSeconds: number) => {
+  const minutes = Math.floor(timeInMinutes);
+  const seconds = Math.floor(timeInSeconds);
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+// Update the timer display in the Heart Modal
+const getTimerColor = (minutes: number) => {
+  if (minutes <= 5) return '#FF6B6B'; // Red for urgent
+  if (minutes <= 15) return '#FFD93D'; // Yellow for warning
+  return '#4CAF50'; // Green for normal
+};
+
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -932,7 +946,25 @@ const playCoinSound = async () => {
       <Text style={styles.modalTitle}>Hearts</Text>
       <Text style={styles.modalText}>Current Hearts: {hearts}</Text>
       {nextHeartTime && (
-        <Text style={styles.timerText}>Next heart in: {timeUntilNextHeart}</Text>
+        <View style={styles.timerContainer}>
+          <Text style={[
+            styles.timerText,
+            { color: getTimerColor(parseInt(timeUntilNextHeart.split(':')[0])) }
+          ]}>
+            Next heart in: {timeUntilNextHeart}
+          </Text>
+          <View style={styles.timerBar}>
+            <View 
+              style={[
+                styles.timerProgress,
+                {
+                  width: `${(parseInt(timeUntilNextHeart.split(':')[0]) / 60) * 100}%`,
+                  backgroundColor: getTimerColor(parseInt(timeUntilNextHeart.split(':')[0]))
+                }
+              ]}
+            />
+          </View>
+        </View>
       )}
       <TouchableOpacity 
         style={[styles.modalButton, coins < 10 && styles.disabledButton]}
@@ -1677,4 +1709,20 @@ audioTitle: {
     textAlign: 'center',
     marginBottom: 15,
   },
+  timerContainer: {
+    alignItems: 'center',
+    marginVertical: 15,
+    width: '100%',
+  },
+  timerBar: {
+    width: '100%',
+    height: 6,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  timerProgress: {
+    height: '100%',
+    borderRadius: 3,
+  }
 });
