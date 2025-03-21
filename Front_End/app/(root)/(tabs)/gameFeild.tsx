@@ -213,117 +213,132 @@ React.useEffect(() => {
     }
   };
 
-  // Update the questions interface to include hints
-const questions = {
-  unit1: [
-    {
-      id: 'coin1',
-      question: "What can you do to start a digital detox journey?",
-      options: [
-        "Delete all social media apps immediately",
-        "Set specific time limits for app usage",
-        "Block all your online friends"
-      ],
-      correct: 1,
-      hint: "Think about gradual changes rather than drastic measures",
-      hintCost: 5
-    },
-    {
-      id: 'coin2',
-      question: "Which activity can help reduce phone addiction?",
-      options: [
-        "Practice mindful meditation",
-        "Watch more YouTube videos",
-        "Check notifications frequently"
-      ],
-      correct: 0,
-      hint: "Focus on activities that promote self-awareness and calmness",
-      hintCost: 5
-    },
-    {
-      id: 'coin3',
-      question: "How can you improve your morning routine?",
-      options: [
-        "Check social media first thing",
-        "Set multiple alarms on your phone",
-        "Avoid phone use for the first hour"
-      ],
-      correct: 2
-    },
-    {
-      id: 'coin4',
-      question: "What's a healthy way to manage social media?",
-      options: [
-        "Post everything you do",
-        "Set designated 'phone-free' times",
-        "Keep notifications always on"
-      ],
-      correct: 1
-    },
-    {
-      id: 'coin5',
-      question: "Which is a sign of digital wellness?",
-      options: [
-        "Feeling anxious without your phone",
-        "Being present in real-life moments",
-        "Constantly checking likes"
-      ],
-      correct: 1
-    }
-  ],
-  unit2: [
-    {
-      id: 'coin1Unit2',
-      question: "What helps create better sleep habits?",
-      options: [
-        "Scrolling before bed",
-        "No screen time before bedtime",
-        "Sleeping with phone nearby"
-      ],
-      correct: 1
-    },
-    {
-      id: 'coin2Unit2',
-      question: "How can you improve focus?",
-      options: [
-        "Keep all notifications on",
-        "Use 'Do Not Disturb' mode",
-        "Check email every 5 minutes"
-      ],
-      correct: 1
-    },
-    {
-      id: 'coin3Unit2',
-      question: "What's a healthy social media habit?",
-      options: [
-        "Comparing yourself to others",
-        "Setting boundaries for usage",
-        "Following trending topics 24/7"
-      ],
-      correct: 1
-    },
-    {
-      id: 'coin4Unit2',
-      question: "Which activity promotes digital balance?",
-      options: [
-        "Endless scrolling",
-        "Constant status updates",
-        "Regular outdoor activities"
-      ],
-      correct: 2
-    },
-    {
-      id: 'coin5Unit2',
-      question: "What helps maintain digital mindfulness?",
-      options: [
-        "Regular screen breaks",
-        "Increased screen time",
-        "Multiple device usage"
-      ],
-      correct: 0
-    }
-  ]
-};
+  const questions = {
+    unit1: [
+      {
+        id: 'coin1',
+        question: "What can you do to start a digital detox journey?",
+        options: [
+          "Delete all social media apps immediately",
+          "Set specific time limits for app usage",
+          "Block all your online friends"
+        ],
+        correct: 1,
+        hint: "Start with small, manageable changes rather than drastic measures. Think about what you can control.",
+        hintCost: 5
+      },
+      {
+        id: 'coin2',
+        question: "Which activity can help reduce phone addiction?",
+        options: [
+          "Practice mindful meditation",
+          "Watch more YouTube videos",
+          "Check notifications frequently"
+        ],
+        correct: 0,
+        hint: "Look for activities that help you stay present and calm, away from screens.",
+        hintCost: 5
+      },
+      {
+        id: 'coin3',
+        question: "How can you improve your morning routine?",
+        options: [
+          "Check social media first thing",
+          "Set multiple alarms on your phone",
+          "Avoid phone use for the first hour"
+        ],
+        correct: 2,
+        hint: "Think about starting your day with real-world activities instead of digital ones.",
+        hintCost: 5
+      },
+      {
+        id: 'coin4',
+        question: "What's a healthy way to manage social media?",
+        options: [
+          "Post everything you do",
+          "Set designated 'phone-free' times",
+          "Keep notifications always on"
+        ],
+        correct: 1,
+        hint: "Consider setting boundaries between your online and offline life.",
+        hintCost: 5
+      },
+      {
+        id: 'coin5',
+        question: "Which is a sign of digital wellness?",
+        options: [
+          "Feeling anxious without your phone",
+          "Being present in real-life moments",
+          "Constantly checking likes"
+        ],
+        correct: 1,
+        hint: "Think about what makes you genuinely engaged with your surroundings.",
+        hintCost: 5
+      }
+    ],
+    unit2: [
+      {
+        id: 'coin1Unit2',
+        question: "What helps create better sleep habits?",
+        options: [
+          "Scrolling before bed",
+          "No screen time before bedtime",
+          "Sleeping with phone nearby"
+        ],
+        correct: 1,
+        hint: "Consider how screen light affects your sleep cycle and relaxation.",
+        hintCost: 5
+      },
+      {
+        id: 'coin2Unit2',
+        question: "How can you improve focus?",
+        options: [
+          "Keep all notifications on",
+          "Use 'Do Not Disturb' mode",
+          "Check email every 5 minutes"
+        ],
+        correct: 1,
+        hint: "Think about what interrupts your concentration most often.",
+        hintCost: 5
+      },
+      {
+        id: 'coin3Unit2',
+        question: "What's a healthy social media habit?",
+        options: [
+          "Comparing yourself to others",
+          "Setting boundaries for usage",
+          "Following trending topics 24/7"
+        ],
+        correct: 1,
+        hint: "Focus on habits that protect your mental well-being and time.",
+        hintCost: 5
+      },
+      {
+        id: 'coin4Unit2',
+        question: "Which activity promotes digital balance?",
+        options: [
+          "Endless scrolling",
+          "Constant status updates",
+          "Regular outdoor activities"
+        ],
+        correct: 2,
+        hint: "Consider activities that get you away from screens completely.",
+        hintCost: 5
+      },
+      {
+        id: 'coin5Unit2',
+        question: "What helps maintain digital mindfulness?",
+        options: [
+          "Regular screen breaks",
+          "Increased screen time",
+          "Multiple device usage"
+        ],
+        correct: 0,
+        hint: "Think about practices that help you step away from technology periodically.",
+        hintCost: 5
+      }
+    ]
+  };
 
 // Add state for hint visibility
 const [showHint, setShowHint] = useState(false);
@@ -1783,9 +1798,9 @@ audioTitle: {
     borderRadius: 3,
   },
   hintButton: {
-    backgroundColor: '#FFD700',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: 'rgba(71, 3, 105, 0.26)',
+    padding: 7,
+    borderRadius: 20,
     marginVertical: 10,
     width: '80%',
     alignSelf: 'center',
@@ -1796,8 +1811,8 @@ audioTitle: {
     justifyContent: 'center',
   },
   hintIcon: {
-    width: 20,
-    height: 20,
+    width: 35,
+    height: 25,
     marginRight: 8,
   },
   hintButtonText: {
