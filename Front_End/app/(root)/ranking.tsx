@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Image, FlatList, ImageBackground } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-import { useUser } from '@clerk/clerk-expo';  // Add this import
+import { useUser } from '@clerk/clerk-expo';
 
+// Interface for user data structure in ranking list
 interface UserItem {
   rank: number;
   name: string;
@@ -11,10 +12,15 @@ interface UserItem {
 }
 
 const RankingScreen = () => {
+  // State management for user XP and authentication
   const [currentUserXP, setCurrentUserXP] = useState<number>(0);
-  const { user } = useUser(); // Add this to get current user
+  const { user } = useUser();
 
-  // Add this function to format the user's name
+  /**
+   * Formats the user's full name to show only first and last name
+   * @param fullName - The complete name string from Clerk
+   * @returns Formatted name string or 'Loading...' if name is not available
+   */
   const formatUserName = (fullName: string | null | undefined) => {
     if (!fullName) return 'Loading...';
     
@@ -26,7 +32,7 @@ const RankingScreen = () => {
     return `${firstName} ${lastName}`;
   };
 
-  // Update useFocusEffect to be more responsive
+  // Load and refresh XP data when screen is focused
   useFocusEffect(
     React.useCallback(() => {
       const loadUserXP = async () => {
@@ -35,23 +41,19 @@ const RankingScreen = () => {
           if (savedProgress) {
             const progress = JSON.parse(savedProgress);
             setCurrentUserXP(progress.xp || 0);
-            console.log('Current XP:', progress.xp);
           }
         } catch (error) {
           console.error('Error loading XP:', error);
         }
       };
 
-      // Load XP immediately when screen comes into focus
       loadUserXP();
-
-      // Set up interval to check for XP updates
-      const interval = setInterval(loadUserXP, 500);
+      const interval = setInterval(loadUserXP, 500); // Refresh XP every 500ms
       return () => clearInterval(interval);
     }, [])
   );
 
-  // Update the users array to use the formatted name
+  // Mock data for ranking list with current user at top
   const users: UserItem[] = [
     { 
       rank: 1, 
@@ -62,7 +64,11 @@ const RankingScreen = () => {
     { rank: 3, name: 'User not found', xp: 0 },
   ];
 
-  // Update getBadgeImage function to return correct badges based on XP
+  /**
+   * Determines which badge image to display based on XP level
+   * @param xp - Current XP points
+   * @returns Path to appropriate badge image
+   */
   const getBadgeImage = (xp: number) => {
     if (xp >= 500) {
       return require('@/assets/images/gold.png');
@@ -73,7 +79,11 @@ const RankingScreen = () => {
     }
   };
 
-  // Function to determine rank title based on XP
+  /**
+   * Determines user's rank title based on XP level
+   * @param xp - Current XP points
+   * @returns Appropriate rank title string
+   */
   const getRankTitle = (xp: number) => {
     if (xp >= 500) {
       return 'Elite Master';
@@ -84,6 +94,7 @@ const RankingScreen = () => {
     }
   };
 
+  // Render individual user row in ranking list
   const renderUser = ({ item }: { item: UserItem }) => (
     <View style={[
       styles.userRow,
@@ -120,9 +131,12 @@ const RankingScreen = () => {
       resizeMode="cover"
     >
       <View style={styles.container}>
+        {/* Header section */}
         <View style={styles.header}>
           <Text style={styles.headerTitle}>World Ranking</Text>
         </View>
+
+        {/* User achievement display section */}
         <View style={styles.achievementSection}>
           <Image
             source={getBadgeImage(currentUserXP)}
@@ -131,6 +145,8 @@ const RankingScreen = () => {
           <Text style={styles.rankTitle}>{getRankTitle(currentUserXP)}</Text>
           <Text style={styles.subtitle}>Current XP: {currentUserXP}</Text>
         </View>
+
+        {/* Ranking list */}
         <FlatList
           data={users}
           renderItem={renderUser}
@@ -142,6 +158,7 @@ const RankingScreen = () => {
   );
 };
 
+// Styles definition for the ranking screen
 const styles = StyleSheet.create({
   backgroundImage: {
     flex: 1,
