@@ -1,69 +1,91 @@
+// Essential imports for React and React Native components
 import React, { useState } from 'react';
-import { Image, ImageBackground, StyleSheet, View, Text, TouchableOpacity, GestureResponderEvent } from 'react-native';
+import { 
+  Image, 
+  ImageBackground, 
+  StyleSheet, 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  GestureResponderEvent 
+} from 'react-native';
 import { Alert, Modal } from 'react-native';
+
+// Utility imports for storage, animations, routing, and audio
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Animated } from 'react-native';
 import { router } from 'expo-router';
 import { Audio } from 'expo-av';
 import Slider from '@react-native-community/slider';
 
-
+/**
+ * Interface defining the structure of user progress data
+ * Stores game state including coins, hearts, and completion status
+ */
 interface UserProgress {
-  completedCoins: string[];
-  coins: number;
-  hearts: number;
-  treasureClaimed: boolean;
-  nextHeartTime: string | null;
-  xp: number;
+  completedCoins: string[];    // Array of completed task IDs
+  coins: number;               // User's coin balance
+  hearts: number;             // Available hearts
+  treasureClaimed: boolean;   // Treasure box claim status
+  nextHeartTime: string | null; // Timer for next heart regeneration
+  xp: number;                 // Experience points
 }
 
+/**
+ * Props interface for GameField component
+ */
 interface GameFieldProps {
   userId: string;
 }
 
 export default function GameField({ userId }: GameFieldProps) {
-
+  // Navigation handler for ranking page
   const handleRankPress = () => {
     router.push('/(root)/ranking');
   };
 
+  // Animation and transition states
   const [isTransitioning, setIsTransitioning] = useState(false);
   const rotateAnim = React.useRef(new Animated.Value(0)).current;
 
-  // State to manage the visibility of the text box for the book icon
+  // UI visibility states
   const [isTextBoxVisible, setIsTextBoxVisible] = useState(false);
-
-  // State to manage the visibility of the text box for Coin 1
   const [isCoin1TextVisible, setIsCoin1TextVisible] = useState(false);
-
-  // State to manage the unit number
   const [unitNumber, setUnitNumber] = useState(1);
 
+  // Audio control state
   const [volume, setVolume] = useState(1.0);
 
+  // Game progress states
   const [selectedCoin, setSelectedCoin] = useState<string | null>(null);
   const [showQuestion, setShowQuestion] = useState(false);
   const [completedCoins, setCompletedCoins] = useState<string[]>([]);
 
+  // Resource management states
   const [hearts, setHearts] = useState(3);
   const [coins, setCoins] = useState(0);
+  const [xp, setXp] = useState<number>(0);
+
+  // Modal visibility states
   const [showCoinModal, setShowCoinModal] = useState(false);
   const [showHeartModal, setShowHeartModal] = useState(false);
-
   const [showTreasureModal, setShowTreasureModal] = useState(false);
   const [treasureClaimed, setTreasureClaimed] = useState(false);
 
+  // Heart timer states
   const [nextHeartTime, setNextHeartTime] = useState<Date | null>(null);
   const [timeUntilNextHeart, setTimeUntilNextHeart] = useState<string>('');
 
+  // Breathing exercise states
   const [showBreathingModal, setShowBreathingModal] = useState(false);
   const [isExerciseStarted, setIsExerciseStarted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [breathingPhase, setBreathingPhase] = useState<'in' | 'out' | ''>('');
-  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes in seconds
+  const [timeRemaining, setTimeRemaining] = useState(120); // 2 minutes
   const breathingAnimation = React.useRef(new Animated.Value(1)).current;
   const [isExerciseCompleted, setIsExerciseCompleted] = useState(false);
 
+  // Audio player states
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showAudioModal, setShowAudioModal] = useState(false);
@@ -71,8 +93,9 @@ export default function GameField({ userId }: GameFieldProps) {
   const [audioDuration, setAudioDuration] = useState(0);
   const [isAudioCompleted, setIsAudioCompleted] = useState(false);
 
-  const [xp, setXp] = useState<number>(0);
-  
+  /**
+   * Handlers for UI interaction and visibility
+   */
   const handleCloseQuestion = () => {
     setShowQuestion(false);
     setSelectedCoin(null);
@@ -81,10 +104,15 @@ export default function GameField({ userId }: GameFieldProps) {
   const toggleTextBox = () => {
     setIsTextBoxVisible(!isTextBoxVisible);
   };
+
   const toggleCoin1TextBox = () => {
     setIsCoin1TextVisible(!isCoin1TextVisible);
   };
 
+  /**
+   * Animation handler for unit transition
+   * Manages rotation animation and unit number update
+   */
   const updateUnitNumber = React.useCallback(() => {
     if (isTransitioning) return;
     
@@ -103,6 +131,9 @@ export default function GameField({ userId }: GameFieldProps) {
     });
   }, [isTransitioning, rotateAnim]);
 
+  /**
+   * Modal visibility handlers
+   */
   const toggleCoinModal = () => {
     setShowCoinModal(!showCoinModal);
   };
@@ -111,9 +142,13 @@ export default function GameField({ userId }: GameFieldProps) {
     setShowHeartModal(!showHeartModal);
   };
   
+  /**
+   * Heart purchase handler
+   * Validates coin balance and updates resources
+   */
   const buyHeart = async () => {
     if (coins >= 10) {
-      await playCoinSound(); // Add this line
+      await playCoinSound();
       setCoins(prevCoins => prevCoins - 10);
       setHearts(prevHearts => prevHearts + 1);
       Alert.alert("Success!", "You bought 1 heart!");
@@ -123,6 +158,10 @@ export default function GameField({ userId }: GameFieldProps) {
     }
   };
 
+  /**
+   * Treasure box handlers
+   * Manages treasure claiming and reward distribution
+   */
   const toggleTreasureModal = () => {
     if (!treasureClaimed) {
       setShowTreasureModal(true);
@@ -130,7 +169,7 @@ export default function GameField({ userId }: GameFieldProps) {
   };
   
   const claimTreasure = async () => {
-    await playCoinSound(); // Add this line
+    await playCoinSound();
     setCoins(prevCoins => prevCoins + 50);
     setTreasureClaimed(true);
     setShowTreasureModal(false);
@@ -138,10 +177,18 @@ export default function GameField({ userId }: GameFieldProps) {
     await saveProgress();
   };
 
-React.useEffect(() => {
-  saveProgress();
-}, [hearts, coins, completedCoins, treasureClaimed, nextHeartTime, userId]);
+  /**
+   * Progress auto-save effect
+   * Triggers when key game states change
+   */
+  React.useEffect(() => {
+    saveProgress();
+  }, [hearts, coins, completedCoins, treasureClaimed, nextHeartTime, userId]);
 
+  /**
+   * Heart regeneration timer effect
+   * Updates heart count and timer display
+   */
   React.useEffect(() => {
     let timer: NodeJS.Timeout;
     
@@ -153,8 +200,7 @@ React.useEffect(() => {
           
           if (timeDiff <= 0) {
             setHearts(prev => prev + 1);
-            // Change to 60 minutes (60 * 60 * 1000 milliseconds)
-            setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000));
+            setNextHeartTime(new Date(Date.now() + 60 * 60 * 1000)); // 60 minutes
           } else {
             const minutes = Math.floor(timeDiff / (1000 * 60));
             const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
@@ -170,6 +216,10 @@ React.useEffect(() => {
     return () => clearInterval(timer);
   }, [hearts, nextHeartTime]);
 
+  /**
+   * Progress save function
+   * Persists game state to AsyncStorage
+   */
   const saveProgress = async () => {
     try {
       const progress = {
@@ -187,6 +237,11 @@ React.useEffect(() => {
     }
   };
 
+  /**
+   * Progress load function
+   * Retrieves game state from AsyncStorage
+   * Initializes default values if no saved progress exists
+   */
   const loadProgress = async () => {
     try {
       const savedProgress = await AsyncStorage.getItem('userProgress_1');
@@ -201,7 +256,7 @@ React.useEffect(() => {
           setNextHeartTime(new Date(progress.nextHeartTime));
         }
       } else {
-        // Initialize with default values if no progress exists
+        // Initialize default values
         setCompletedCoins([]);
         setCoins(0);
         setHearts(3);
@@ -635,7 +690,7 @@ const getTimerColor = (minutes: number) => {
   if (minutes <= 15) return '#FFD93D'; // Yellow for warning
   return '#4CAF50'; // Green for normal
 };
-
+// The main container of the screen
   return (
     <View style={styles.container}>
       <ImageBackground
@@ -643,7 +698,9 @@ const getTimerColor = (minutes: number) => {
         style={styles.backgroundImage}
         resizeMode="cover"
       >
+        {/* Top bar showing coins, hearts, and rank badge */}
         <View style={styles.topBar}>
+          {/* Coin button: opens coin modal */}
           <TouchableOpacity onPress={toggleCoinModal} style={styles.topItemContainer}>
             <View style={styles.topItemBox}>
               <Image source={require('@/assets/images/dollar.png')} style={styles.topIcon} />
@@ -651,6 +708,7 @@ const getTimerColor = (minutes: number) => {
             </View>
           </TouchableOpacity>
 
+          {/* Heart button: opens heart modal */}
           <TouchableOpacity onPress={toggleHeartModal} style={styles.topItemContainer}>
             <View style={styles.topItemBox}>
               <Image source={require('@/assets/images/heart.png')} style={styles.topIcon} />
@@ -658,6 +716,7 @@ const getTimerColor = (minutes: number) => {
             </View>
           </TouchableOpacity>
 
+          {/* Rank badge: navigates to rank page */}
           <TouchableOpacity onPress={handleRankPress}>
             <Image 
               source={getBadgeImage(xp)} 
@@ -666,6 +725,7 @@ const getTimerColor = (minutes: number) => {
           </TouchableOpacity>
         </View>
 
+        {/* Section header with title and subtext */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionText}>
             SECTION 1, UNIT {unitNumber} {'\n'}
@@ -673,6 +733,7 @@ const getTimerColor = (minutes: number) => {
           </Text>
           <View style={styles.line} />
 
+          {/* Book icon: opens section introduction */}
           <TouchableOpacity onPress={toggleTextBox}>
             <Image
               source={require('@/assets/images/book.png')}
@@ -681,29 +742,31 @@ const getTimerColor = (minutes: number) => {
           </TouchableOpacity>
         </View>
 
+        {/* Arrow icon: toggles between units */}
         <TouchableOpacity 
-  onPress={updateUnitNumber}
-  disabled={isTransitioning}
-  style={{ opacity: isTransitioning ? 0.5 : 1 }}
->
-<Animated.Image
-  source={unitNumber === 2  // Changed from unitNumber === 1
-    ? require('@/assets/images/upArrow.png')
-    : require('@/assets/images/arrow.png')}
-  style={[
-    styles.arrowIcon,
-    {
-      transform: [{
-        rotate: rotateAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: ['0deg', '180deg']
-        })
-      }]
-    }
-  ]}
-/>
-</TouchableOpacity>
+          onPress={updateUnitNumber}
+          disabled={isTransitioning}
+          style={{ opacity: isTransitioning ? 0.5 : 1 }}
+        >
+        <Animated.Image
+          source={unitNumber === 2  // Changed from unitNumber === 1
+            ? require('@/assets/images/upArrow.png')
+            : require('@/assets/images/arrow.png')}
+          style={[
+            styles.arrowIcon,
+            {
+              transform: [{
+                rotate: rotateAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '180deg']
+                })
+              }]
+            }
+          ]}
+        />
+        </TouchableOpacity>
 
+        {/* Text box for showing section introduction */}
         {isTextBoxVisible && (
           <View style={styles.textBox}>
             <TouchableOpacity 
@@ -724,6 +787,7 @@ const getTimerColor = (minutes: number) => {
           </View>
         )}
 
+        {/* Coins and breathing buttons for unit 1 */}
         {unitNumber === 1 ? (
           <>
             <TouchableOpacity 
@@ -798,6 +862,8 @@ const getTimerColor = (minutes: number) => {
           </>
         ) : (
           <>
+
+            {/* Coins and speaker buttons for unit 2 */}
             <TouchableOpacity 
               onPress={() => handleCoinPress('coin1Unit2')} 
               style={[styles.coinContainer, styles.coin1Unit2]}
@@ -876,6 +942,7 @@ const getTimerColor = (minutes: number) => {
           </>
         )}
 
+        {/* Treasure box button */}
         <TouchableOpacity 
           onPress={toggleTreasureModal}
           disabled={treasureClaimed}
@@ -890,7 +957,7 @@ const getTimerColor = (minutes: number) => {
           />
         </TouchableOpacity>
 
-
+        {/* Modal for showing questions */} 
         <Modal
         visible={showQuestion}
         transparent={true}
@@ -968,7 +1035,7 @@ const getTimerColor = (minutes: number) => {
         </View>
       </Modal>
 
-
+      {/* Modal for managing coins */}
       <Modal
         visible={showCoinModal}
         transparent={true}
@@ -999,55 +1066,58 @@ const getTimerColor = (minutes: number) => {
         </View>
       </Modal>
 
+      {/* Modal for managing hearts */}
       <Modal
-  visible={showHeartModal}
-  transparent={true}
-  animationType="slide"
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      <TouchableOpacity 
-        onPress={toggleHeartModal}
-        style={styles.closeButton}
+        visible={showHeartModal}
+        transparent={true}
+        animationType="slide"
       >
-        <Image 
-          source={require('@/assets/images/close.png')} 
-          style={styles.closeIcon} 
-        />
-      </TouchableOpacity>
-      <Text style={styles.modalTitle}>Hearts</Text>
-      <Text style={styles.modalText}>Current Hearts: {hearts}</Text>
-      {nextHeartTime && (
-        <View style={styles.timerContainer}>
-          <Text style={[
-            styles.timerText,
-            { color: getTimerColor(parseInt(timeUntilNextHeart.split(':')[0])) }
-          ]}>
-            Next heart in: {timeUntilNextHeart}
-          </Text>
-          <View style={styles.timerBar}>
-            <View 
-              style={[
-                styles.timerProgress,
-                {
-                  width: `${(parseInt(timeUntilNextHeart.split(':')[0]) / 60) * 100}%`,
-                  backgroundColor: getTimerColor(parseInt(timeUntilNextHeart.split(':')[0]))
-                }
-              ]}
-            />
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <TouchableOpacity 
+              onPress={toggleHeartModal}
+              style={styles.closeButton}
+            >
+              <Image 
+                source={require('@/assets/images/close.png')} 
+                style={styles.closeIcon} 
+              />
+            </TouchableOpacity>
+            <Text style={styles.modalTitle}>Hearts</Text>
+            <Text style={styles.modalText}>Current Hearts: {hearts}</Text>
+            {nextHeartTime && (
+              <View style={styles.timerContainer}>
+                <Text style={[
+                  styles.timerText,
+                  { color: getTimerColor(parseInt(timeUntilNextHeart.split(':')[0])) }
+                ]}>
+                  Next heart in: {timeUntilNextHeart}
+                </Text>
+                <View style={styles.timerBar}>
+                  <View 
+                    style={[
+                      styles.timerProgress,
+                      {
+                        width: `${(parseInt(timeUntilNextHeart.split(':')[0]) / 60) * 100}%`,
+                        backgroundColor: getTimerColor(parseInt(timeUntilNextHeart.split(':')[0]))
+                      }
+                    ]}
+                  />
+                </View>
+              </View>
+            )}
+            <TouchableOpacity 
+              style={[styles.modalButton, coins < 10 && styles.disabledButton]}
+              onPress={buyHeart}
+              disabled={coins < 10}
+            >
+              <Text style={styles.buttonText}>Buy Heart (10 coins)</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      )}
-      <TouchableOpacity 
-        style={[styles.modalButton, coins < 10 && styles.disabledButton]}
-        onPress={buyHeart}
-        disabled={coins < 10}
-      >
-        <Text style={styles.buttonText}>Buy Heart (10 coins)</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+      </Modal>
+      
+      {/* Modal for managing Treasure */}
       <Modal
         visible={showTreasureModal}
         transparent={true}
@@ -1088,192 +1158,196 @@ const getTimerColor = (minutes: number) => {
           </View>
         </View>
       </Modal>
+
+      {/* Modal for Breathing Exercise */}
       <Modal
-  visible={showBreathingModal}
-  transparent={true}
-  animationType="slide"
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      {!isExerciseCompleted && (
-        <TouchableOpacity 
-          onPress={() => setShowBreathingModal(false)}
-          style={styles.closeButton}
-        >
-          <Image 
-            source={require('@/assets/images/close.png')} 
-            style={styles.closeIcon} 
-          />
-        </TouchableOpacity>
-      )}
+        visible={showBreathingModal}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {!isExerciseCompleted && (
+              <TouchableOpacity 
+                onPress={() => setShowBreathingModal(false)}
+                style={styles.closeButton}
+              >
+                <Image 
+                  source={require('@/assets/images/close.png')} 
+                  style={styles.closeIcon} 
+                />
+              </TouchableOpacity>
+            )}
 
-      <Text style={styles.breathingTitle}>Breathing Exercise</Text>
-      
-      {!isExerciseStarted && !isExerciseCompleted ? (
-        <TouchableOpacity 
-          style={styles.startButton}
-          onPress={startBreathingExercise}
-        >
-          <Text style={styles.startButtonText}>Start Exercise</Text>
-        </TouchableOpacity>
-      ) : isExerciseCompleted ? (
-        <View style={styles.exerciseContainer}>
-          <Text style={styles.breathingText}>Well done!</Text>
-          <TouchableOpacity 
-            style={styles.doneButton}
-            onPress={handleDone}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.exerciseContainer}>
-          <Text style={styles.breathingText}>
-            {breathingPhase === 'in' ? 'Breathe In..' : 'Breathe Out..'}
-          </Text>
-          
-          <Animated.Image
-            source={require('@/assets/images/breathe.png')}
-            style={[
-              styles.breatheImage,
-              {
-                transform: [{ scale: breathingAnimation }]
-              }
-            ]}
-          />
-          
-          <Text style={styles.timerText}>
-            Time remaining: {Math.floor(timeRemaining / 60)}:
-            {(timeRemaining % 60).toString().padStart(2, '0')}
-          </Text>
-        </View>
-      )}
-    </View>
-  </View>
-</Modal>
-<Modal
-  visible={showAudioModal}
-  transparent={true}
-  animationType="slide"
->
-  <View style={styles.modalContainer}>
-    <View style={styles.modalContent}>
-      {!isAudioCompleted && !isPlaying && (
-        <TouchableOpacity 
-          onPress={() => {
-            if (sound) {
-              sound.unloadAsync();
-            }
-            setShowAudioModal(false);
-            setIsPlaying(false);
-          }}
-          style={styles.closeButton}
-        >
-          <Image 
-            source={require('@/assets/images/close.png')} 
-            style={styles.closeIcon} 
-          />
-        </TouchableOpacity>
-      )}
-
-      {isPlaying && (
-        <View style={styles.volumeControlContainer}>
-          <Image 
-            source={require('@/assets/images/soundLow.png')} 
-            style={styles.volumeIcon} 
-          />
-          <Slider
-            style={styles.volumeSlider}
-            minimumValue={0}
-            maximumValue={1}
-            value={volume}
-            onValueChange={adjustVolume}
-            minimumTrackTintColor="#A8D8EA"
-            maximumTrackTintColor="#000000"
-            thumbTintColor="#A8D8EA"
-          />
-          <Image 
-            source={require('@/assets/images/soundHigh.png')} 
-            style={styles.volumeIcon} 
-          />
-        </View>
-      )}
-
-      <Text style={styles.modalTitle}>Listen and Get Motivated!</Text>
-      
-      {!isPlaying && !isAudioCompleted ? (
-        <TouchableOpacity 
-          style={styles.startButton}
-          onPress={async () => {
-            try {
-              if (sound) {
-                await sound.playAsync();
-                setIsPlaying(true);
-              }
-            } catch (error) {
-              console.error('Error playing sound:', error);
-            }
-          }}
-        >
-          <Text style={styles.startButtonText}>Start Listening</Text>
-        </TouchableOpacity>
-      ) : isAudioCompleted ? (
-        <View style={styles.completionContainer}>
-          <Text style={styles.completionText}>Well done!</Text>
-          <TouchableOpacity 
-            style={styles.doneButton}
-            onPress={handleAudioComplete}
-          >
-            <Text style={styles.doneButtonText}>Done</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={styles.audioControlsContainer}>
-          <View style={styles.progressBarContainer}>
-            <View 
-              style={[
-                styles.progressBar, 
-                { width: `${audioProgress * 100}%` }
-              ]} 
-            />
+            <Text style={styles.breathingTitle}>Breathing Exercise</Text>
+            
+            {!isExerciseStarted && !isExerciseCompleted ? (
+              <TouchableOpacity 
+                style={styles.startButton}
+                onPress={startBreathingExercise}
+              >
+                <Text style={styles.startButtonText}>Start Exercise</Text>
+              </TouchableOpacity>
+            ) : isExerciseCompleted ? (
+              <View style={styles.exerciseContainer}>
+                <Text style={styles.breathingText}>Well done!</Text>
+                <TouchableOpacity 
+                  style={styles.doneButton}
+                  onPress={handleDone}
+                >
+                  <Text style={styles.doneButtonText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.exerciseContainer}>
+                <Text style={styles.breathingText}>
+                  {breathingPhase === 'in' ? 'Breathe In..' : 'Breathe Out..'}
+                </Text>
+                
+                <Animated.Image
+                  source={require('@/assets/images/breathe.png')}
+                  style={[
+                    styles.breatheImage,
+                    {
+                      transform: [{ scale: breathingAnimation }]
+                    }
+                  ]}
+                />
+                
+                <Text style={styles.timerText}>
+                  Time remaining: {Math.floor(timeRemaining / 60)}:
+                  {(timeRemaining % 60).toString().padStart(2, '0')}
+                </Text>
+              </View>
+            )}
           </View>
-          
-          <Text style={styles.timerText}>
-            {Math.floor((audioProgress * audioDuration) / 60)}:
-            {Math.floor((audioProgress * audioDuration) % 60).toString().padStart(2, '0')} / 
-            {Math.floor(audioDuration / 60)}:
-            {Math.floor(audioDuration % 60).toString().padStart(2, '0')}
-          </Text>
-
-          <TouchableOpacity 
-            style={styles.audioControlButton}
-            onPress={async () => {
-              if (sound) {
-                if (isPlaying) {
-                  await sound.pauseAsync();
-                } else {
-                  await sound.playAsync();
-                }
-                setIsPlaying(!isPlaying);
-              }
-            }}
-          >
-            <Image 
-              source={isPlaying ? 
-                require('@/assets/images/pause.png') : 
-                require('@/assets/images/play.png')
-              } 
-              style={styles.audioControlIcon} 
-            />
-            <Text style={styles.audioControlText}>
-              {isPlaying ? 'Pause' : 'Continue'}
-            </Text>
-          </TouchableOpacity>
         </View>
-      )}
-    </View>
-  </View>
-</Modal>
+      </Modal>
+
+      {/* Modal for managing Audio */}
+      <Modal
+        visible={showAudioModal}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            {!isAudioCompleted && !isPlaying && (
+              <TouchableOpacity 
+                onPress={() => {
+                  if (sound) {
+                    sound.unloadAsync();
+                  }
+                  setShowAudioModal(false);
+                  setIsPlaying(false);
+                }}
+                style={styles.closeButton}
+              >
+                <Image 
+                  source={require('@/assets/images/close.png')} 
+                  style={styles.closeIcon} 
+                />
+              </TouchableOpacity>
+            )}
+
+            {isPlaying && (
+              <View style={styles.volumeControlContainer}>
+                <Image 
+                  source={require('@/assets/images/soundLow.png')} 
+                  style={styles.volumeIcon} 
+                />
+                <Slider
+                  style={styles.volumeSlider}
+                  minimumValue={0}
+                  maximumValue={1}
+                  value={volume}
+                  onValueChange={adjustVolume}
+                  minimumTrackTintColor="#A8D8EA"
+                  maximumTrackTintColor="#000000"
+                  thumbTintColor="#A8D8EA"
+                />
+                <Image 
+                  source={require('@/assets/images/soundHigh.png')} 
+                  style={styles.volumeIcon} 
+                />
+              </View>
+            )}
+
+            <Text style={styles.modalTitle}>Listen and Get Motivated!</Text>
+            
+            {!isPlaying && !isAudioCompleted ? (
+              <TouchableOpacity 
+                style={styles.startButton}
+                onPress={async () => {
+                  try {
+                    if (sound) {
+                      await sound.playAsync();
+                      setIsPlaying(true);
+                    }
+                  } catch (error) {
+                    console.error('Error playing sound:', error);
+                  }
+                }}
+              >
+                <Text style={styles.startButtonText}>Start Listening</Text>
+              </TouchableOpacity>
+            ) : isAudioCompleted ? (
+              <View style={styles.completionContainer}>
+                <Text style={styles.completionText}>Well done!</Text>
+                <TouchableOpacity 
+                  style={styles.doneButton}
+                  onPress={handleAudioComplete}
+                >
+                  <Text style={styles.doneButtonText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.audioControlsContainer}>
+                <View style={styles.progressBarContainer}>
+                  <View 
+                    style={[
+                      styles.progressBar, 
+                      { width: `${audioProgress * 100}%` }
+                    ]} 
+                  />
+                </View>
+                
+                <Text style={styles.timerText}>
+                  {Math.floor((audioProgress * audioDuration) / 60)}:
+                  {Math.floor((audioProgress * audioDuration) % 60).toString().padStart(2, '0')} / 
+                  {Math.floor(audioDuration / 60)}:
+                  {Math.floor(audioDuration % 60).toString().padStart(2, '0')}
+                </Text>
+
+                <TouchableOpacity 
+                  style={styles.audioControlButton}
+                  onPress={async () => {
+                    if (sound) {
+                      if (isPlaying) {
+                        await sound.pauseAsync();
+                      } else {
+                        await sound.playAsync();
+                      }
+                      setIsPlaying(!isPlaying);
+                    }
+                  }}
+                >
+                  <Image 
+                    source={isPlaying ? 
+                      require('@/assets/images/pause.png') : 
+                      require('@/assets/images/play.png')
+                    } 
+                    style={styles.audioControlIcon} 
+                  />
+                  <Text style={styles.audioControlText}>
+                    {isPlaying ? 'Pause' : 'Continue'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
       </ImageBackground>
 
       <View style={styles.horizontalLine} />
