@@ -25,6 +25,7 @@ import PostCard from "@/components/PostCard";
 import Input from "@/components/Input";
 import Icon from "@/constants/icon";
 import CommentItem from "@/components/CommentItem";
+import { createNotification } from "@/service/notificationService";
 
 const postDetails = () => {
   const { postId } = useLocalSearchParams();
@@ -99,7 +100,7 @@ const postDetails = () => {
   };
 
   const reloadPage = async () => {
-    await getPostDetails();
+    getPostDetails();
   };
 
   const reloadScreen = () => {
@@ -129,6 +130,16 @@ const postDetails = () => {
     let res = await createPostComment(data);
     setLoading(false);
     if (res.success) {
+      if (user?.id !== post?.user_id) {
+        let notify = {
+          senderid: user?.id,
+          receiverid: post?.user_id,
+          title: "commented on your post",
+          data: JSON.stringify({ postId: post?.id, commentId: res?.data?.id }),
+        };
+        createNotification(notify);
+      }
+
       inputRef?.current?.clear();
       commentRef.current = "";
     } else {
@@ -187,8 +198,9 @@ const postDetails = () => {
               className="flex items-center justify-center p-2 bg-white border border-gray-300  rounded-lg"
               onPress={() => {
                 onNewComment();
-                //reloadScreen();
-                reloadPage();
+                setTimeout(() => {
+                  reloadScreen();
+                }, 500);
               }}
             >
               <Icon.sendIcon color="#2095F2" />
@@ -202,7 +214,9 @@ const postDetails = () => {
               key={comment?.id?.toString()}
               item={comment}
               onDelete={onDeleteComment}
-              canDelete={comment.user_id == user?.id || user?.id == post.userid}
+              canDelete={
+                comment.user_id == user?.id || user?.id == post.user_id
+              }
             />
           ))}
         </View>

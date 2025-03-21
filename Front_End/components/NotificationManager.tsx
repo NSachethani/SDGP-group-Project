@@ -70,22 +70,21 @@ export async function checkUsageAndNotify() {
       console.log(
         `[NotificationManager] Today data: totalScreenTime=${today.totalScreenTime}, unlocks=${today.unlocks}, apps count=${today.apps.length}`
       );
+      // Deduplicate apps to avoid multiple notifications for the same app
+      const processedApps = new Set<string>();
       for (const app of today.apps) {
         const name = app.name.toLowerCase();
+        if (processedApps.has(name)) continue;
+        processedApps.add(name);
+
         const limit = timers[name];
-        // console.log(
-        //   `[NotificationManager] Checking app ${name.toUpperCase()}: current usage ${(
-        //     app.screenTime / 60000
-        //   ).toFixed(1)} minutes, limit ${limit} minutes`
-        // );
         if (limit && app.screenTime >= limit * 60000) {
-          // Check if a notification was already sent recently (e.g., within 1 hour)
+          // Check if a notification was sent recently (e.g., within 20 hours)
           const key = `notified_${name}`;
           const lastNotifiedStr = await AsyncStorage.getItem(key);
           if (lastNotifiedStr) {
             const diff = now.getTime() - parseInt(lastNotifiedStr);
             if (diff < 20 * 60 * 60 * 1000) {
-              // 1 hour threshold
               console.log(
                 `[NotificationManager] Notification for ${name.toUpperCase()} already sent recently.`
               );
@@ -138,7 +137,7 @@ export function stopFrequentRefresh() {
 TaskManager.defineTask(TASK_NAME, async () => {
   try {
     await checkUsageAndNotify();
-    return "newData";
+    return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch (err) {
     console.warn("[NotificationManager] Background task error", err);
     return "failed";
@@ -148,7 +147,7 @@ TaskManager.defineTask(TASK_NAME, async () => {
 export async function scheduleBackgroundTask() {
   try {
     await BackgroundFetch.registerTaskAsync(TASK_NAME, {
-      minimumInterval: 15 * 60,
+      minimumInterval: 30,
       stopOnTerminate: false,
       startOnBoot: true,
     });
