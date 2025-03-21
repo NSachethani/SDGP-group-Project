@@ -29,7 +29,21 @@ export const tokenCache = {
   },
 };
 
-export const googleOAuth = async (startOAuthFlow: any) => {
+export interface GoogleOAuthResult {
+  success: boolean;
+  code?: string;
+  message: string;
+  signUp?: {
+    createdUserId?: string;
+    firstName?: string;
+    lastName?: string;
+    emailAddress?: string;
+  };
+}
+
+export const googleOAuth = async (
+  startOAuthFlow: any
+): Promise<GoogleOAuthResult> => {
   try {
     const { createdSessionId, setActive, signUp } = await startOAuthFlow({
       // Remove the leading slash so the URL becomes pauseplus://(root)/(tabs)/home
@@ -55,6 +69,7 @@ export const googleOAuth = async (startOAuthFlow: any) => {
           success: true,
           code: "success",
           message: "You have successfully signed in with Google",
+          signUp, // Return signUp so we can use it in OAuth.tsx
         };
       }
     }
@@ -68,7 +83,7 @@ export const googleOAuth = async (startOAuthFlow: any) => {
     return {
       success: false,
       code: err.code,
-      message: err?.errors[0]?.longMessage,
+      message: err?.errors?.[0]?.longMessage || "OAuth error",
     };
   }
 };

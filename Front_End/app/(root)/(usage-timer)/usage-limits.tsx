@@ -1,8 +1,20 @@
-import { View, Text, ImageBackground } from "react-native";
-import React from "react";
+import { View, Text, ImageBackground,BackHandler } from "react-native";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+
 
 const UsageLimits = () => {
+  useEffect(() => {
+      const backAction = () => {
+        router.replace("/(root)/(tabs)/home");
+        return true;
+      };
+      BackHandler.addEventListener("hardwareBackPress", backAction);
+      return () =>
+        BackHandler.removeEventListener("hardwareBackPress", backAction);
+    }, []);
+    
   return (
     <>
       <ImageBackground

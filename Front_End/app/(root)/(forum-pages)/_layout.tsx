@@ -10,6 +10,7 @@ const ForumLayout = () => {
       <Stack.Screen name="Mindful-Living" options={{ headerShown: false }} />
       <Stack.Screen name="Offline-Bliss" options={{ headerShown: false }} />
       <Stack.Screen name="Technical-Help" options={{ headerShown: false }} />
+      <Stack.Screen name="postDetails" options={{ headerShown: false, presentation:"modal" }} />
     </Stack>
   );
 };

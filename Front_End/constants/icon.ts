@@ -37,6 +37,12 @@ import check from "@/assets/icons/check.png";
 import fingrprint from "@/assets/icons/fingerprint.png";
 import timer from "@/assets/icons/timer.png";
 import add from "@/assets/icons/add.png";
+import image from "@/assets/icons/image.png";
+import delete_ from "@/assets/icons/delete.png";
+import heartlike from "@/assets/icons/Heart.jsx";
+import comment from "@/assets/icons/Comment.jsx";
+import sendIcon from "@/assets/icons/Send.jsx";
+import comdelete from "@/assets/icons/Delete.jsx";
 
 export default {
   google,
@@ -78,4 +84,10 @@ export default {
   fingrprint,
   timer,
   add,
+  image,
+  delete_,
+  heartlike,
+  comment,
+  sendIcon,
+  comdelete,
 };

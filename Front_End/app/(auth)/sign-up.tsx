@@ -19,6 +19,7 @@ import OAuth from "@/components/OAuth";
 import { useSignUp } from "@clerk/clerk-expo";
 import { ReactNativeModal } from "react-native-modal";
 import { fetchAPI } from "@/lib/fetch";
+import { useClerkSupabaseClient } from "@/lib/clerkSupabase";
 
 const SignUp = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -35,6 +36,7 @@ const SignUp = () => {
     code: "",
     error: "",
   });
+  const supabase = useClerkSupabaseClient();
   const onSignUpPress = async () => {
     if (!isLoaded) return;
 
@@ -83,6 +85,17 @@ const SignUp = () => {
             clerk_id: signUpAttempt.createdUserId,
           }),
         });
+        const { data, error } = await supabase.from("tasks").insert({
+          user_id: signUpAttempt.createdUserId,
+          first_name: form.fname,
+          last_name: form.lname,
+          email: form.email,
+        });
+        if (error) {
+          console.error("Supabase insert error:", error);
+        } else {
+          console.log("Supabase insert success:", data);
+        }
         await setActive({ session: signUpAttempt.createdSessionId });
         setVerification({ ...verification, state: "success" });
       } else {
