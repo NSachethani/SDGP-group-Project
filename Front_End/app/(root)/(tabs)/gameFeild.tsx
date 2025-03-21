@@ -213,112 +213,139 @@ React.useEffect(() => {
     }
   };
 
-  const questions = {
-    unit1: [
-      {
-        id: 'coin1',
-        question: "What can you do to start a digital detox journey?",
-        options: [
-          "Delete all social media apps immediately",
-          "Set specific time limits for app usage",
-          "Block all your online friends"
-        ],
-        correct: 1
-      },
-      {
-        id: 'coin2',
-        question: "Which activity can help reduce phone addiction?",
-        options: [
-          "Practice mindful meditation",
-          "Watch more YouTube videos",
-          "Check notifications frequently"
-        ],
-        correct: 0
-      },
-      {
-        id: 'coin3',
-        question: "How can you improve your morning routine?",
-        options: [
-          "Check social media first thing",
-          "Set multiple alarms on your phone",
-          "Avoid phone use for the first hour"
-        ],
-        correct: 2
-      },
-      {
-        id: 'coin4',
-        question: "What's a healthy way to manage social media?",
-        options: [
-          "Post everything you do",
-          "Set designated 'phone-free' times",
-          "Keep notifications always on"
-        ],
-        correct: 1
-      },
-      {
-        id: 'coin5',
-        question: "Which is a sign of digital wellness?",
-        options: [
-          "Feeling anxious without your phone",
-          "Being present in real-life moments",
-          "Constantly checking likes"
-        ],
-        correct: 1
-      }
-    ],
-    unit2: [
-      {
-        id: 'coin1Unit2',
-        question: "What helps create better sleep habits?",
-        options: [
-          "Scrolling before bed",
-          "No screen time before bedtime",
-          "Sleeping with phone nearby"
-        ],
-        correct: 1
-      },
-      {
-        id: 'coin2Unit2',
-        question: "How can you improve focus?",
-        options: [
-          "Keep all notifications on",
-          "Use 'Do Not Disturb' mode",
-          "Check email every 5 minutes"
-        ],
-        correct: 1
-      },
-      {
-        id: 'coin3Unit2',
-        question: "What's a healthy social media habit?",
-        options: [
-          "Comparing yourself to others",
-          "Setting boundaries for usage",
-          "Following trending topics 24/7"
-        ],
-        correct: 1
-      },
-      {
-        id: 'coin4Unit2',
-        question: "Which activity promotes digital balance?",
-        options: [
-          "Endless scrolling",
-          "Constant status updates",
-          "Regular outdoor activities"
-        ],
-        correct: 2
-      },
-      {
-        id: 'coin5Unit2',
-        question: "What helps maintain digital mindfulness?",
-        options: [
-          "Regular screen breaks",
-          "Increased screen time",
-          "Multiple device usage"
-        ],
-        correct: 0
-      }
-    ]
-  };
+  // Update the questions interface to include hints
+const questions = {
+  unit1: [
+    {
+      id: 'coin1',
+      question: "What can you do to start a digital detox journey?",
+      options: [
+        "Delete all social media apps immediately",
+        "Set specific time limits for app usage",
+        "Block all your online friends"
+      ],
+      correct: 1,
+      hint: "Think about gradual changes rather than drastic measures",
+      hintCost: 5
+    },
+    {
+      id: 'coin2',
+      question: "Which activity can help reduce phone addiction?",
+      options: [
+        "Practice mindful meditation",
+        "Watch more YouTube videos",
+        "Check notifications frequently"
+      ],
+      correct: 0,
+      hint: "Focus on activities that promote self-awareness and calmness",
+      hintCost: 5
+    },
+    {
+      id: 'coin3',
+      question: "How can you improve your morning routine?",
+      options: [
+        "Check social media first thing",
+        "Set multiple alarms on your phone",
+        "Avoid phone use for the first hour"
+      ],
+      correct: 2
+    },
+    {
+      id: 'coin4',
+      question: "What's a healthy way to manage social media?",
+      options: [
+        "Post everything you do",
+        "Set designated 'phone-free' times",
+        "Keep notifications always on"
+      ],
+      correct: 1
+    },
+    {
+      id: 'coin5',
+      question: "Which is a sign of digital wellness?",
+      options: [
+        "Feeling anxious without your phone",
+        "Being present in real-life moments",
+        "Constantly checking likes"
+      ],
+      correct: 1
+    }
+  ],
+  unit2: [
+    {
+      id: 'coin1Unit2',
+      question: "What helps create better sleep habits?",
+      options: [
+        "Scrolling before bed",
+        "No screen time before bedtime",
+        "Sleeping with phone nearby"
+      ],
+      correct: 1
+    },
+    {
+      id: 'coin2Unit2',
+      question: "How can you improve focus?",
+      options: [
+        "Keep all notifications on",
+        "Use 'Do Not Disturb' mode",
+        "Check email every 5 minutes"
+      ],
+      correct: 1
+    },
+    {
+      id: 'coin3Unit2',
+      question: "What's a healthy social media habit?",
+      options: [
+        "Comparing yourself to others",
+        "Setting boundaries for usage",
+        "Following trending topics 24/7"
+      ],
+      correct: 1
+    },
+    {
+      id: 'coin4Unit2',
+      question: "Which activity promotes digital balance?",
+      options: [
+        "Endless scrolling",
+        "Constant status updates",
+        "Regular outdoor activities"
+      ],
+      correct: 2
+    },
+    {
+      id: 'coin5Unit2',
+      question: "What helps maintain digital mindfulness?",
+      options: [
+        "Regular screen breaks",
+        "Increased screen time",
+        "Multiple device usage"
+      ],
+      correct: 0
+    }
+  ]
+};
+
+// Add state for hint visibility
+const [showHint, setShowHint] = useState(false);
+const [currentHint, setCurrentHint] = useState("");
+const [purchasedHints, setPurchasedHints] = useState<string[]>([]);
+
+// Add function to handle hint purchase
+const handleHintPurchase = (coinId: string, hintCost: number, hint: string) => {
+  if (coins >= hintCost && !purchasedHints.includes(coinId)) {
+    setCoins(prevCoins => prevCoins - hintCost);
+    setPurchasedHints(prev => [...prev, coinId]);
+    setCurrentHint(hint);
+    setShowHint(true);
+    Alert.alert("Hint Unlocked!", "Use this hint wisely!");
+    saveProgress();
+  } else if (purchasedHints.includes(coinId)) {
+    setCurrentHint(hint);
+    setShowHint(true);
+  } else {
+    Alert.alert("Not enough coins!", `You need ${hintCost} coins to get a hint.`);
+  }
+};
 
   const handleCoinPress = (coinId: string) => {
     // First check if the task is already completed
@@ -890,6 +917,36 @@ const getTimerColor = (minutes: number) => {
                     <Text style={styles.optionText}>{option}</Text>
                   </TouchableOpacity>
                 ))}
+                {/* Show Hint Button or Hint Text */}
+                {!purchasedHints.includes(selectedCoin) ? (
+                  <TouchableOpacity
+                    style={styles.hintButton}
+                    onPress={() => {
+                      const question = questions.unit1.find(q => q.id === selectedCoin);
+                      if (question && question.hintCost !== undefined && question.hint) {
+                        handleHintPurchase(selectedCoin, question.hintCost, question.hint);
+                      }
+                    }}
+                  >
+                    <View style={styles.hintButtonContent}>
+                      <Image 
+                        source={require('@/assets/images/lightbulb.png')} 
+                        style={styles.hintIcon} 
+                      />
+                      <Text style={styles.hintButtonText}>Get Hint (5 coins)</Text>
+                    </View>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.hintContainer}>
+                    <Image 
+                      source={require('@/assets/images/lightbulb.png')} 
+                      style={styles.hintIcon} 
+                    />
+                    <Text style={styles.hintText}>
+                      {questions.unit1.find(q => q.id === selectedCoin)?.hint}
+                    </Text>
+                  </View>
+                )}
               </>
             )}
           </View>
@@ -1724,5 +1781,45 @@ audioTitle: {
   timerProgress: {
     height: '100%',
     borderRadius: 3,
+  },
+  hintButton: {
+    backgroundColor: '#FFD700',
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 10,
+    width: '80%',
+    alignSelf: 'center',
+  },
+  hintButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  hintIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 8,
+  },
+  hintButtonText: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  hintContainer: {
+    backgroundColor: 'rgba(255, 215, 0, 0.2)',
+    padding: 12,
+    borderRadius: 8,
+    marginVertical: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '80%',
+    alignSelf: 'center',
+  },
+  hintText: {
+    color: '#000',
+    fontSize: 14,
+    fontStyle: 'italic',
+    flex: 1,
+    marginLeft: 8,
   }
 });
