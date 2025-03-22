@@ -193,3 +193,50 @@ import { createClient } from "@supabase/supabase-js";
       return { success: false, msg: "Could not fetch Notification" };
     }
   }
+
+  {/*Technical Help */}
+
+  export const createNotification5 = async (notification: any) => {
+  
+    try {
+      const { data, error } = await supabase
+        .from("TH_Notification")
+        .insert(notification)
+        .select()
+        .single();
+  
+      if (error) {
+        console.error("Notification error:", error);
+        return { success: false, msg: "Something went wrong! (Notification)" };
+      }
+  
+      return { success: true, data };
+    } catch (error) {
+      console.log("Notification error:", error);
+      return { success: false, msg:  "Something went wrong! (Notification)" };
+    }
+  };
+
+
+  export const fetchNotification5 = async (receiverid: any) => {
+    try{
+      const { data, error } = await supabase
+      .from("TH_Notification")
+      .select(
+        `
+        *,
+        sender: senderid(user_id, id, first_name, last_name)
+      `
+      )
+      .eq("receiverid", receiverid)
+      .order("created_at", { ascending: false})
+      if (error) {
+        console.error("fetch Notification error:", error);
+        return { success: false, msg: "Could not fetch Notification" };
+      }
+      return { success: true, data: data };
+    }catch(error){
+      console.log("fetch Notification error:", error);
+      return { success: false, msg: "Could not fetch Notification" };
+    }
+  }
