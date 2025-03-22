@@ -16,7 +16,6 @@ useEffect(() => {
     BackHandler.removeEventListener("hardwareBackPress", backAction);
 }, []);
 
-
   return (
     <>
       <ImageBackground

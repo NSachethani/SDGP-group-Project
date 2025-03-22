@@ -7,6 +7,7 @@ import filter from "@/assets/icons/filter.png";
 import star from "@/assets/icons/star.png";
 import heart from "@/assets/icons/heart.png";
 import backArrow from "@/assets/icons/back-arrow.png";
+import backArrow2 from "@/assets/icons/back-arrow2.png";
 import calendar from "@/assets/icons/calendar.png";
 import info from "@/assets/icons/info.png";
 import language from "@/assets/icons/language.png";
@@ -33,6 +34,15 @@ import settings from "@/assets/icons/settings.png";
 import email from "@/assets/icons/email.png";
 import lock from "@/assets/icons/lock.png";
 import check from "@/assets/icons/check.png";
+import fingrprint from "@/assets/icons/fingerprint.png";
+import timer from "@/assets/icons/timer.png";
+import add from "@/assets/icons/add.png";
+import image from "@/assets/icons/image.png";
+import delete_ from "@/assets/icons/delete.png";
+import heartlike from "@/assets/icons/Heart.jsx";
+import comment from "@/assets/icons/Comment.jsx";
+import sendIcon from "@/assets/icons/Send.jsx";
+import comdelete from "@/assets/icons/Delete.jsx";
 
 export default {
   google,
@@ -44,6 +54,7 @@ export default {
   star,
   heart,
   backArrow,
+  backArrow2,
   calendar,
   info,
   language,
@@ -70,4 +81,13 @@ export default {
   email,
   lock,
   check,
+  fingrprint,
+  timer,
+  add,
+  image,
+  delete_,
+  heartlike,
+  comment,
+  sendIcon,
+  comdelete,
 };

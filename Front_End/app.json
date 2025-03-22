@@ -1,11 +1,11 @@
 {
   "expo": {
     "name": "PausePlus",
-    "slug": "pauseplus",
+    "slug": "PausePlus",
+    "scheme": "pauseplus",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "pauseplus",
+    "icon": "./assets/images/app-icon.png",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,14 +13,16 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "foregroundImage": "./assets/images/app-icon.png",
+        "backgroundColor": "transparent"
+      },
+      "permissions": ["android.permission.RECEIVE_BOOT_COMPLETED"],
+      "package": "com.wolfwiz12.pauseplus"
     },
     "web": {
       "bundler": "metro",
       "output": "server",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/app-icon.png"
     },
     "plugins": [
       [
@@ -33,7 +35,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "resizeMode": "stretch",
+          "resizeMode": "contain",
           "backgroundColor": "#ffffff",
           "enableFullScreenImage_legacy": true
         }
@@ -60,6 +62,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+
+    "extra": {
+      "oneSignalAppId": "<1902ad14-5703-46af-8df8-e2a291f67ab6>"
     }
   }
 }

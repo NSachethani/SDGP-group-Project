@@ -5,9 +5,11 @@ import { useFonts } from "expo-font";
 import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-expo";
 import { Slot } from "expo-router";
 import { tokenCache } from "@/lib/auth";
+import { LogBox } from "react-native";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
-
+LogBox.ignoreLogs(['Warning: TRenderEngineProvider','Warning: MemoizedTNodeRenderer','Warning: TNodeChildrenRenderer']);
+LogBox.ignoreAllLogs(true);
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     "Rubik-Bold": require("../assets/fonts/Rubik-Bold.ttf"),
@@ -47,6 +49,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(root)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          
         </Stack>
       </ClerkLoaded>
     </ClerkProvider>
