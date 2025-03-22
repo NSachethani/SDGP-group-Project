@@ -25,8 +25,11 @@ const settings = () => {
   const handleLogout = async () => {
     try {
       await signOut();
+      // Clear user progress
+      await AsyncStorage.removeItem(`userProgress_${user.id}`);
       // Remove session token from storage
       await AsyncStorage.removeItem("sessionToken");
+      
       router.replace("/(auth)/sign-in"); // redirect to login page
     } catch (error) {
       console.error("Error signing out:", error);

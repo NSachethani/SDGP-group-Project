@@ -4,6 +4,7 @@ import { TokenCache } from "@clerk/clerk-expo/dist/cache";
 import * as Linking from "expo-linking";
 import { fetchAPI } from "@/lib/fetch";
 
+
 export const tokenCache = {
   async getToken(key: string) {
     try {
