@@ -11,6 +11,8 @@ const ForumLayout = () => {
       <Stack.Screen name="Offline-Bliss" options={{ headerShown: false }} />
       <Stack.Screen name="Technical-Help" options={{ headerShown: false }} />
       <Stack.Screen name="postDetails" options={{ headerShown: false, presentation:"modal" }} />
+      <Stack.Screen name="postDetails2" options={{ headerShown: false, presentation:"modal" }} />
+      <Stack.Screen name="postDetails3" options={{ headerShown: false, presentation:"modal" }} />
     </Stack>
   );
 };

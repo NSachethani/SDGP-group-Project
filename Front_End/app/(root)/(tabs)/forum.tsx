@@ -80,11 +80,11 @@ const forum = () => {
                 </View>
               </View>
             </View>
-<View className=" ml-5">
-  <Text className="text-2xl font-ztgatha mt-1">
-    Forum Channels:
-  </Text>
-</View>
+            <View className=" ml-5">
+              <Text className="text-2xl font-ztgatha mt-1">
+                Forum Channels:
+              </Text>
+            </View>
             <View>
               <TouchableOpacity
                 onPress={() => {
@@ -96,7 +96,14 @@ const forum = () => {
                     <Text className="text-xl font-rubik-semibold">
                       Mindful Living
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.replace({
+                          pathname: "/Mindful-Living",
+                          params: { showModal: "true" },
+                        });
+                      }}
+                    >
                       <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
                     </TouchableOpacity>
                   </View>
@@ -119,7 +126,14 @@ const forum = () => {
                     <Text className="text-xl font-rubik-semibold">
                       Addiction Help
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.replace({
+                          pathname: "/Addiction-Help",
+                          params: { showModal: "true" },
+                        });
+                      }}
+                    >
                       <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
                     </TouchableOpacity>
                   </View>
@@ -142,7 +156,14 @@ const forum = () => {
                     <Text className="text-xl font-rubik-semibold">
                       Digital Wellness
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.replace({
+                          pathname: "/Digital-Wellness",
+                          params: { showModal: "true" },
+                        });
+                      }}
+                    >
                       <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
                     </TouchableOpacity>
                   </View>

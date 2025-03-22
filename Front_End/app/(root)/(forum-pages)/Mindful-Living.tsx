@@ -14,7 +14,7 @@ import {
   StyleSheet,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
-import { router, useRouter } from "expo-router";
+import { router, useRouter, useLocalSearchParams } from "expo-router";
 import icon from "@/constants/icon";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import RichTextEditor from "@/components/RichTextEditor";
@@ -36,6 +36,14 @@ const MindfulLiving = () => {
   const supabaseKey =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVjbGVhZnd1dnVzYnlyemN1eXBpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwNDk4NTksImV4cCI6MjA1NzYyNTg1OX0.0dIH_SM50-zdKH1Or07_dRwEOOIe7YjDxe9ttqHsuq4";
   const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { showModal } = useLocalSearchParams();
+
+  useEffect(() => {
+    if (showModal === "true") {
+      setInfoModalVisible(true);
+    }
+  }, [showModal]);
 
   const [posts, setPosts] = useState<{ id: number }[]>([]);
 
