@@ -8,30 +8,23 @@ import {
   NativeModules,
   ScrollView,
   TouchableOpacity,
-  RefreshControl, // <--- new import
+  RefreshControl, 
 } from "react-native";
 import React, { useState, useEffect, useMemo } from "react";
 import { Picker } from "@react-native-picker/picker";
 import icon from "@/constants/icon";
 import SocialMediaMeter from "@/components/SocialMediaMeter";
 
-const getCurrentDate = () => {
-  const date = new Date();
-  const options: Intl.DateTimeFormatOptions = {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  };
-  return date.toLocaleDateString("en-US", options).replace(",", "");
-};
 
+// Import the native module for screen time functionality
 const { ScreenTimeModule } = NativeModules;
 
+// Helper function to format time from milliseconds to "Xhr, Ymins" format
 const formatTime = (ms: number) => {
-  const totalMinutes = Math.floor(ms / 60000);
-  const hrs = Math.floor(totalMinutes / 60);
-  const mins = totalMinutes % 60;
-  return `${hrs}hr, ${mins}mins`;
+  const totalMinutes = Math.floor(ms / 60000); // Convert milliseconds to total minutes
+  const hrs = Math.floor(totalMinutes / 60); // Extract hours from total minutes
+  const mins = totalMinutes % 60; // Extract remaining minutes
+  return `${hrs}hr, ${mins}mins`; // Return formatted string
 };
 
 // New helper to format full date.
@@ -53,8 +46,13 @@ const getFormattedAnalyticsDate = (usageData: any[], selectedDay: any) => {
 };
 
 export default function home() {
+  // State to manage the selected option in the picker (Daily, Weekly, Monthly)
   const [selectedOption, setSelectedOption] = useState("Daily");
+
+  // State to store the usage data fetched from the native module
   const [usageData, setUsageData] = useState<any[]>([]);
+
+  // State to store the currently selected day's data
   const [selectedDay, setSelectedDay] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false); // new state
 
@@ -77,10 +75,11 @@ export default function home() {
     fetchUsageData();
   }, []);
 
+  // Function to handle pull-to-refresh functionality
   const onRefresh = () => {
-    setRefreshing(true);
-    fetchUsageData();
-    setRefreshing(false);
+    setRefreshing(true); // Set the refreshing state to true to show the spinner
+    fetchUsageData(); // Fetch the latest usage data
+    setRefreshing(false); // Reset the refreshing state to false after fetching
   };
 
   // Set containerHeight to match the actual progressContainer height (50)
@@ -140,22 +139,28 @@ export default function home() {
                 </Picker>
               </View>
             </View>
+            {/* Section for displaying analytics date and horizontal line */}
             <View className="flex justify-end flex-col ">
+              {/* Display analytics date with dynamic formatting */}
               <Text className="text-lg text-['#797575'] ml-4 mb-3">
-                Analytics for{" "}
-                <Text className="text-lg text-[#4D5A60] ">
-                  {selectedDay
-                    ? getFormattedAnalyticsDate(usageData, selectedDay)
-                    : formatFullDate(new Date())}
-                </Text>
+              Analytics for{" "}
+              <Text className="text-lg text-[#4D5A60] ">
+                {selectedDay
+                ? getFormattedAnalyticsDate(usageData, selectedDay) // Format date based on selected day
+                : formatFullDate(new Date())} 
               </Text>
+              </Text>
+              {/* Horizontal line for visual separation */}
               <View style={[styles.horizontalLine1]} />
             </View>
+
+            {/* Section for displaying screen time information */}
             <View className="flex justify-center bg-white/75 rounded-3xl m-2">
               <View className="flex justify-center items-center mb-1">
-                <Text className="text-md font-semibold text-[#8C8989]">
-                  SCREEN TIME
-                </Text>
+              {/* Label for screen time */}
+              <Text className="text-md font-semibold text-[#8C8989]">
+                SCREEN TIME
+              </Text>
               </View>
               {/* Center selected day container */}
               {selectedDay && (
@@ -217,36 +222,41 @@ export default function home() {
                 Total Unlocks Today: {usageData[0] ? usageData[0].unlocks : 0}
               </Text>
             </View> */}
+            {/* Section for displaying total unlocks and detox time */}
             <View className="flex justify-center bg-white/60 rounded-3xl m-2">
               <View className="flex flex-row w-full mt-5 mb-5 ml-1 justify-around">
-                <View className="flex justify-center items-center">
-                  <Image source={icon.fingrprint} className="w-20 h-20" />
-                </View>
-                <View className="flex justify-center items-center">
-                  <Text className="text-md font-semibold text-[#8C8989]">
-                    TOTAL UNLOCKS{"\n"}{" "}
-                    <Text className="text-3xl text-black font-rubik-bold">
-                      {selectedDay ? selectedDay.unlocks : 0}
-                    </Text>
-                  </Text>
-                </View>
-                <View style={styles.verticalLine}></View>
-                <View className="flex justify-center items-center rounded-xl bg-[#8D5395]/80 flex-wrap mr-1">
-                  <Text className="text-md font-ztgatha text-white m-2">
-                    TOTAL DETOX TIME
-                    {"\n"}{" "}
-                    <Text className="text-2xl text-white font-rubik-semibold">
-                      {selectedDay && selectedDay.apps
-                        ? formatTime(
-                            selectedDay.apps.find(
-                              (app: any) =>
-                                app.name === "com.wolfwiz12.pauseplus"
-                            )?.screenTime || 0
-                          )
-                        : "0hr, 0mins"}
-                    </Text>
-                  </Text>
-                </View>
+              {/* Fingerprint icon for visual representation */}
+              <View className="flex justify-center items-center">
+                <Image source={icon.fingrprint} className="w-20 h-20" />
+              </View>
+              {/* Total unlocks display */}
+              <View className="flex justify-center items-center">
+                <Text className="text-md font-semibold text-[#8C8989]">
+                TOTAL UNLOCKS{"\n"}{" "}
+                <Text className="text-3xl text-black font-rubik-bold">
+                  {selectedDay ? selectedDay.unlocks : 0}
+                </Text>
+                </Text>
+              </View>
+              {/* Vertical line separator */}
+              <View style={styles.verticalLine}></View>
+              {/* Total detox time display */}
+              <View className="flex justify-center items-center rounded-xl bg-[#8D5395]/80 flex-wrap mr-1">
+                <Text className="text-md font-ztgatha text-white m-2">
+                TOTAL DETOX TIME
+                {"\n"}{" "}
+                <Text className="text-2xl text-white font-rubik-semibold">
+                  {selectedDay && selectedDay.apps
+                  ? formatTime(
+                    selectedDay.apps.find(
+                      (app: any) =>
+                      app.name === "com.wolfwiz12.pauseplus"
+                    )?.screenTime || 0
+                    )
+                  : "0hr, 0mins"}
+                </Text>
+                </Text>
+              </View>
               </View>
             </View>
             <View className="flex justify-center bg-white/60 rounded-3xl mt-2 ">

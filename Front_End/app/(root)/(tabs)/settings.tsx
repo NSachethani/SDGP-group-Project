@@ -18,7 +18,7 @@ import * as ImagePicker from "expo-image-picker";
 
 const settings = () => {
   const { signOut } = useClerk(); // useClerk returns the clerk instance
-
+  const { user } = useUser();
   const [previewVisible, setPreviewVisible] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
 
@@ -26,23 +26,19 @@ const settings = () => {
     try {
       await signOut();
       // Clear user progress
-      await AsyncStorage.removeItem(`userProgress_${user.id}`);
+      if (user) {
+        await AsyncStorage.removeItem(`userProgress_${user.id}`);
+      }
       // Remove session token from storage
       await AsyncStorage.removeItem("sessionToken");
-      
+
       router.replace("/(auth)/sign-in"); // redirect to login page
     } catch (error) {
       console.error("Error signing out:", error);
     }
   };
 
-  const handletimer = async () => {
-    try {
-      router.replace("/(root)/(usage-timer)/usage-limits");
-    } catch (error) {
-      console.error("Error loading:", error);
-    }
-  };
+
   const handleBack = async () => {
     try {
       router.replace("/(root)/(tabs)/home");
@@ -51,21 +47,26 @@ const settings = () => {
     }
   };
 
+  // Function to handle changing the profile picture
   const handleChangeProfilePic = async () => {
-    if (!user) return;
+    if (!user) return; // Ensure the user is logged in
+    // Request permission to access the media library
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") return;
+    if (status !== "granted") return; // Exit if permission is not granted
+
+    // Launch the image picker to select an image
     const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      base64: true,
+      allowsEditing: true, // Allow editing the selected image
+      base64: true, // Return the image as a base64 string
     });
+
+    // If the user selects an image, set it as the selected image URI
     if (!result.canceled) {
       setSelectedImageUri("data:image/jpeg;base64," + result.assets[0].base64);
-      setPreviewVisible(true);
+      setPreviewVisible(true); // Show the preview modal
     }
   };
 
-  const { user } = useUser();
   return (
     <>
       <ImageBackground

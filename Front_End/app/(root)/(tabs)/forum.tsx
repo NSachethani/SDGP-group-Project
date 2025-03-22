@@ -15,17 +15,21 @@ import { router } from "expo-router";
 import icon from "@/constants/icon";
 import { useUser } from "@clerk/clerk-expo";
 
+// Define the main forum component
 const forum = () => {
+  // State to manage the visibility of the information modal
   const [infoModalVisible, setInfoModalVisible] = useState(false);
 
+  // Function to handle the back button press and navigate to the home page
   const handleBack = async () => {
     try {
-      router.replace("/(root)/(tabs)/home"); // redirect to login page
+      router.replace("/(root)/(tabs)/home"); // Redirect to the home page
     } catch (error) {
-      console.error("Error loading:", error);
+      console.error("Error loading:", error); // Log any errors
     }
   };
 
+  // Destructure the user object from the useUser hook
   const { user } = useUser();
 
   return (
@@ -36,48 +40,59 @@ const forum = () => {
       >
         <SafeAreaView>
           <ScrollView>
+            {/* Header section with back button, title, and info button */}
             <View className="bg-white/60 rounded-lg p-4 flex justify-center m-5">
               <View className="flex flex-row justify-between">
-                <TouchableOpacity onPress={handleBack}>
-                  <Image source={icon.backArrow2} className="w-8 h-8 mt-1" />
-                </TouchableOpacity>
-                <Text className="text-center text-2xl font-semibold text-[#7769B7]">
-                  Community Forum
-                </Text>
-                <TouchableOpacity onPress={() => setInfoModalVisible(true)}>
-                  <Image source={icon.info} className="w-10 h-10" />
-                </TouchableOpacity>
+              {/* Back button to navigate to the previous screen */}
+              <TouchableOpacity onPress={handleBack}>
+                <Image source={icon.backArrow2} className="w-8 h-8 mt-1" />
+              </TouchableOpacity>
+              {/* Title of the forum */}
+              <Text className="text-center text-2xl font-semibold text-[#7769B7]">
+                Community Forum
+              </Text>
+              {/* Info button to open the modal with forum rules */}
+              <TouchableOpacity onPress={() => setInfoModalVisible(true)}>
+                <Image source={icon.info} className="w-10 h-10" />
+              </TouchableOpacity>
               </View>
             </View>
 
+            {/* Profile Status Section */}
             <View className="bg-white/60 rounded-lg ml-5 mr-5 mb-3">
+              {/* Title for Profile Status */}
               <Text className="ml-4 text-2xl font-ztgatha mt-1">
-                Profile Status:
+              Profile Status:
               </Text>
-              <View className=" flex flex-row justify-between  p-4">
-                <View>
-                  <Text className="font-rubik-light text-lg ">
-                    <Text className="font-rubik-medium">
-                      &#8226; Forum Name:{" "}
-                    </Text>
-                    {user?.firstName || "Not Found"}{" "}
-                    {user?.lastName || "Not Found"}
-                  </Text>
-                  <Text className="font-ztgatha text-lg ">
-                    <Text className="font-rubik-medium">&#8226; Warns: </Text>0
-                  </Text>
-                </View>
-                <View style={styles.verticalLine}></View>
-                <View className="flex justify-center items-center m-2">
-                  <Image
-                    source={{
-                      uri:
-                        user?.externalAccounts[0]?.imageUrl ?? user?.imageUrl,
-                    }}
-                    style={{ width: 50, height: 50, borderRadius: 110 / 2 }}
-                    className=" rounded-full h-[110px] w-[110px] border-[3px] border-white shadow-sm shadow-neutral-300"
-                  />
-                </View>
+              <View className="flex flex-row justify-between p-4">
+              {/* User Information Section */}
+              <View>
+                {/* Display Forum Name */}
+                <Text className="font-rubik-light text-lg">
+                <Text className="font-rubik-medium">
+                  &#8226; Forum Name:{" "}
+                </Text>
+                {user?.firstName || "Not Found"}{" "}
+                {user?.lastName || "Not Found"}
+                </Text>
+                {/* Display Warns Count */}
+                <Text className="font-ztgatha text-lg">
+                <Text className="font-rubik-medium">&#8226; Warns: </Text>0
+                </Text>
+              </View>
+              {/* Vertical Divider */}
+              <View style={styles.verticalLine}></View>
+              {/* User Profile Picture Section */}
+              <View className="flex justify-center items-center m-2">
+                <Image
+                source={{
+                  uri:
+                  user?.externalAccounts[0]?.imageUrl ?? user?.imageUrl,
+                }}
+                style={{ width: 50, height: 50, borderRadius: 110 / 2 }}
+                className="rounded-full h-[110px] w-[110px] border-[3px] border-white shadow-sm shadow-neutral-300"
+                />
+              </View>
               </View>
             </View>
             <View className=" ml-5">
@@ -85,147 +100,156 @@ const forum = () => {
                 Forum Channels:
               </Text>
             </View>
+            {/* Mindful Living Forum Channel */}
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Mindful-Living");
-                }}
+              onPress={() => {
+                router.replace("/Mindful-Living"); // Navigate to the Mindful Living page
+              }}
               >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Mindful Living
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.replace({
-                          pathname: "/Mindful-Living",
-                          params: { showModal: "true" },
-                        });
-                      }}
-                    >
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on digital mindfulness and balance.
-                  </Text>
+              <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
+                <View className="flex flex-row justify-between items-center">
+                <Text className="text-xl font-rubik-semibold">
+                  Mindful Living
+                </Text>
+                {/* Button to open a modal or perform additional actions */}
+                <TouchableOpacity
+                  onPress={() => {
+                  router.replace({
+                    pathname: "/Mindful-Living",
+                    params: { showModal: "true" }, // Pass parameters to the route
+                  });
+                  }}
+                >
+                  <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
+                </TouchableOpacity>
                 </View>
+                <View style={styles.horizontalLine}></View>
+                <Text className="text-md text-[#8C8989]">
+                Discussions on digital mindfulness and balance.
+                </Text>
+              </View>
               </TouchableOpacity>
             </View>
 
+            {/* Addiction Help Forum Channel */}
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Addiction-Help");
-                }}
+              onPress={() => {
+                router.replace("/Addiction-Help"); // Navigate to the Addiction Help page
+              }}
               >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Addiction Help
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.replace({
-                          pathname: "/Addiction-Help",
-                          params: { showModal: "true" },
-                        });
-                      }}
-                    >
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on digital addiction and recovery.
-                  </Text>
+              <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
+                <View className="flex flex-row justify-between items-center">
+                <Text className="text-xl font-rubik-semibold">
+                  Addiction Help
+                </Text>
+                {/* Button to open a modal or perform additional actions */}
+                <TouchableOpacity
+                  onPress={() => {
+                  router.replace({
+                    pathname: "/Addiction-Help",
+                    params: { showModal: "true" }, // Pass parameters to the route
+                  });
+                  }}
+                >
+                  <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
+                </TouchableOpacity>
                 </View>
+                <View style={styles.horizontalLine}></View>
+                <Text className="text-md text-[#8C8989]">
+                Discussions on digital addiction and recovery.
+                </Text>
+              </View>
               </TouchableOpacity>
             </View>
 
+            {/* Digital Wellness Forum Channel */}
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Digital-Wellness");
-                }}
+              onPress={() => {
+                router.replace("/Digital-Wellness"); // Navigate to the Digital Wellness page
+              }}
               >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Digital Wellness
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.replace({
-                          pathname: "/Digital-Wellness",
-                          params: { showModal: "true" },
-                        });
-                      }}
-                    >
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on digital wellness and health.
-                  </Text>
+              <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
+                <View className="flex flex-row justify-between items-center">
+                <Text className="text-xl font-rubik-semibold">
+                  Digital Wellness
+                </Text>
+                {/* Button to open a modal or perform additional actions */}
+                <TouchableOpacity
+                  onPress={() => {
+                  router.replace({
+                    pathname: "/Digital-Wellness",
+                    params: { showModal: "true" }, // Pass parameters to the route
+                  });
+                  }}
+                >
+                  <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
+                </TouchableOpacity>
                 </View>
+                <View style={styles.horizontalLine}></View>
+                <Text className="text-md text-[#8C8989]">
+                Discussions on digital wellness and health.
+                </Text>
+              </View>
               </TouchableOpacity>
             </View>
 
-
+            {/* Offline Bliss Forum Channel */}
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Offline-Bliss");
-                }}
+              onPress={() => {
+                router.replace("/Offline-Bliss"); // Navigate to the Offline Bliss page
+              }}
               >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Offline Bliss
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.replace({
-                          pathname: "/Offline-Bliss",
-                          params: { showModal: "true" },
-                        });
-                      }}
-                    >
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on digital mindfulness and balance.
-                  </Text>
+              <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
+                <View className="flex flex-row justify-between items-center">
+                <Text className="text-xl font-rubik-semibold">
+                  Offline Bliss
+                </Text>
+                {/* Button to open a modal or perform additional actions */}
+                <TouchableOpacity
+                  onPress={() => {
+                  router.replace({
+                    pathname: "/Offline-Bliss",
+                    params: { showModal: "true" }, // Pass parameters to the route
+                  });
+                  }}
+                >
+                  <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
+                </TouchableOpacity>
                 </View>
+                <View style={styles.horizontalLine}></View>
+                <Text className="text-md text-[#8C8989]">
+                Discussions on digital mindfulness and balance.
+                </Text>
+              </View>
               </TouchableOpacity>
             </View>
 
+            {/* Technical Help Forum Channel */}
             <View>
               <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Technical-Help");
-                }}
+              onPress={() => {
+                router.replace("/Technical-Help"); // Navigate to the Technical Help page
+              }}
               >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Technical Help
-                    </Text>
-                    <TouchableOpacity>
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on technical issues and troubleshooting.
-                  </Text>
+              <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
+                <View className="flex flex-row justify-between items-center">
+                <Text className="text-xl font-rubik-semibold">
+                  Technical Help
+                </Text>
+                {/* Button to open a modal or perform additional actions */}
+                <TouchableOpacity>
+                  <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
+                </TouchableOpacity>
                 </View>
+                <View style={styles.horizontalLine}></View>
+                <Text className="text-md text-[#8C8989]">
+                Discussions on technical issues and troubleshooting.
+                </Text>
+              </View>
               </TouchableOpacity>
             </View>
             <View className="flex flex-col rounded-lg p-4 m-5"></View>

@@ -22,22 +22,33 @@ import { fetchAPI } from "@/lib/fetch";
 import { useClerkSupabaseClient } from "@/lib/clerkSupabase";
 
 const SignUp = () => {
+  // Destructure necessary functions from useSignUp hook
   const { isLoaded, signUp, setActive } = useSignUp();
+
+  // State to control the visibility of the success modal
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // State to manage form inputs for user details
   const [form, setForm] = useState({
-    fname: "",
-    lname: "",
-    email: "",
-    password: "",
+    fname: "", // First name input
+    lname: "", // Last name input
+    email: "", // Email input
+    password: "", // Password input
   });
 
+  // State to manage verification process
   const [verification, setVerification] = useState({
-    state: "default",
-    code: "",
-    error: "",
+    state: "default", // Current state of verification (default, pending, success, failed)
+    code: "", // Verification code input
+    error: "", // Error message during verification
   });
+
+  // Initialize Supabase client using Clerk integration
   const supabase = useClerkSupabaseClient();
+
+  // Function to handle the sign-up process
   const onSignUpPress = async () => {
+    // Ensure the sign-up process is only initiated when the Clerk client is loaded
     if (!isLoaded) return;
 
     // Start sign-up process using email and password provided

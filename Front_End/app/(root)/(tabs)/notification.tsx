@@ -122,7 +122,7 @@ const notification = () => {
                   ? NotificationItem3
                   : item.type === "type4"
                   ? NotificationItem4
-                  : NotificationItem5; 
+                  : NotificationItem5;
               return <Component item={item} key={item.id} router={router} />;
             })}
             {notification.length === 0 && (
@@ -132,6 +132,8 @@ const notification = () => {
                 </Text>
               </View>
             )}
+            <View className="flex justify-center bg-white/60 rounded-3xl mt-10"></View>
+            <View className="flex justify-center bg-white/60 rounded-3xl mt-10"></View>
           </ScrollView>
         </SafeAreaView>
       </ImageBackground>
