@@ -175,52 +175,6 @@ const forum = () => {
               </TouchableOpacity>
             </View>
 
-            <View>
-              <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Focus-Flow");
-                }}
-              >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Focus Flow
-                    </Text>
-                    <TouchableOpacity>
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on digital productivity and focus.
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            <View>
-              <TouchableOpacity
-                onPress={() => {
-                  router.replace("/Healthy-Habits");
-                }}
-              >
-                <View className="flex flex-col bg-white/70 rounded-lg p-4 m-5">
-                  <View className="flex flex-row justify-between items-center">
-                    <Text className="text-xl font-rubik-semibold">
-                      Healthy Habits
-                    </Text>
-                    <TouchableOpacity>
-                      <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
-                    </TouchableOpacity>
-                  </View>
-                  <View style={styles.horizontalLine}></View>
-                  <Text className="text-md text-[#8C8989]">
-                    Discussions on encouraging positive digital and offline
-                    habits.
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            </View>
 
             <View>
               <TouchableOpacity
@@ -233,7 +187,14 @@ const forum = () => {
                     <Text className="text-xl font-rubik-semibold">
                       Offline Bliss
                     </Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        router.replace({
+                          pathname: "/Offline-Bliss",
+                          params: { showModal: "true" },
+                        });
+                      }}
+                    >
                       <Image source={icon.add} className="w-8 h-8 mt-1"></Image>
                     </TouchableOpacity>
                   </View>

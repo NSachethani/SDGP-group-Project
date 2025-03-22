@@ -647,3 +647,218 @@ export const removePost3 = async (postId: string) => {
     return { success: false, msg: "Could not remove the post" };
   }
 };
+
+
+{/* Ofline Bliss section */}
+
+export const createOrUpadatePost4 = async (post: any) => {
+
+
+  try {
+    if (post.file && typeof post.file == "object") {
+      let isImage = post?.file?.type == "image";
+      let folderName = isImage ? "postImages" : "postVideos";
+      let fileResults = await uploadFile(folderName, post?.file?.uri, isImage);
+      // Instead of storing the full JSON, store only the file "path" as text.
+      if (fileResults.success && fileResults.data?.path) {
+        post.file = fileResults.data.path;
+      } else {
+        return fileResults;
+      }
+    }
+
+    const { data, error } = await supabase
+      .from("OB_Posts")
+      .upsert(post)
+      .select()
+      .single();
+    if (error) {
+      console.error("createPost error:", error);
+      return { success: false, msg: "Could not create post" };
+    }
+    return { success: true, data };
+  } catch (error) {
+    console.log("createPost error:", error);
+    return { success: false, msg: "Could not create post" };
+  }
+};
+
+export const fetchPosts4 = async (limit = 50) => {
+
+  try {
+    const { data, error } = await supabase
+      .from("OB_Posts")
+      .select(
+        `
+        *,
+        user:tasks(user_id, id, first_name, last_name),
+        OB_PostLikes (*),
+        OB_PostComments(*)
+      `
+      )
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      console.error("fetchPost error:", error);
+      return { success: false, msg: "Could not fetch posts" };
+    }
+
+    return { success: true, data: data };
+  } catch (error) {
+    console.log("FetchPosts error:", error);
+    return { success: false, msg: "Could not fetchn the posts" };
+  }
+};
+
+export const getUserData4 = async (user_id: string) => {
+
+  try {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select()
+      .eq("user_id", user_id)
+      .single();
+    if (error) {
+      console.error("getUserData error:", error);
+      return { success: false, msg: error?.message };
+    }
+    return { success: true, data: data };
+  } catch (error: any) {
+    console.log("getUserData error:", error);
+    return { success: false, msg: error?.message };
+  }
+};
+
+export const createPostLike4 = async (postLike: any) => {
+
+  try {
+    const { data, error } = await supabase
+      .from("OB_PostLikes")
+      .insert(postLike)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Post Like error:", error);
+      return { success: false, msg: "Could not like posts" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.log("Post Like error:", error);
+    return { success: false, msg: "Could not like the posts" };
+  }
+};
+
+export const RemovePostLike4 = async (postId: any, user_id: String) => {
+
+
+  try {
+    const { error } = await supabase
+      .from("OB_PostLikes")
+      .delete()
+      .eq("user_id", user_id)
+      .eq("postid", postId);
+
+    if (error) {
+      console.error("Post Like error:", error);
+      return { success: false, msg: "Could not like posts" };
+    }
+
+    return { success: true, data: "Post like removed" };
+  } catch (error) {
+    console.log("Post Like error:", error);
+    return { success: false, msg: "Could not like the posts" };
+  }
+};
+
+
+export const fetchPostDetails4 = async (postId: string) => {
+  try{
+    const { data, error } = await supabase
+    .from("OB_Posts")
+    .select(
+      `
+      *,
+      user:tasks(user_id, id, first_name, last_name),
+      OB_PostLikes (*),
+      OB_PostComments(*,user:tasks(user_id, id, first_name, last_name))
+    `
+    )
+    .eq("id", postId)
+    .order("created_at", { ascending: false, foreignTable: "OB_PostComments" })
+    .single();
+    if (error) {
+      console.error("fetchPostDetails error:", error);
+      return { success: false, msg: "Could not fetch post details" };
+    }
+    return { success: true, data: data };
+  }catch(error){
+    console.log("fetchPostDetails error:", error);
+    return { success: false, msg: "Could not fetch post details" };
+  }
+}
+
+export const createPostComment4 = async (comment: any) => {
+
+  try {
+    const { data, error } = await supabase
+      .from("OB_PostComments")
+      .insert(comment)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Post Comment error:", error);
+      return { success: false, msg: "Could not comment posts" };
+    }
+
+    return { success: true, data };
+  } catch (error) {
+    console.log("Post Comment error:", error);
+    return { success: false, msg: "Could not comment the posts" };
+  }
+};
+
+
+export const removeComment4 = async (commentId: string) => {
+
+  try {
+    const { error } = await supabase
+      .from("OB_PostComments")
+      .delete()
+      .eq("id", commentId);
+
+    if (error) {
+      console.error("Remove Comment error:", error);
+      return { success: false, msg: "Could not remove comment" };
+    }
+
+    return { success: true, data: {commentId} };
+  } catch (error) {
+    console.log("Remove Comment error:", error);
+    return { success: false, msg: "Could not remove the comment" };
+  }
+};
+
+
+export const removePost4 = async (postId: string) => {
+
+  try {
+    const { error } = await supabase
+      .from("OB_Posts")
+      .delete()
+      .eq("id", postId);
+
+    if (error) {
+      console.error("Remove Post error:", error);
+      return { success: false, msg: "Could not remove post" };
+    }
+
+    return { success: true, data: {postId} };
+  } catch (error) {
+    console.log("Remove Post error:", error);
+    return { success: false, msg: "Could not remove the post" };
+  }
+};

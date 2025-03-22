@@ -16,11 +16,13 @@ import {
   fetchNotification,
   fetchNotification2,
   fetchNotification3,
+  fetchNotification4,
 } from "@/service/notificationService";
 import { useUser } from "@clerk/clerk-expo";
 import NotificationItem from "@/components/NotificationItem";
 import NotificationItem2 from "@/components/NotificationItem2";
 import NotificationItem3 from "@/components/NotificationItem3";
+import NotificationItem4 from "@/components/NotificationItem4";
 
 const notification = () => {
   const { user } = useUser();
@@ -36,11 +38,13 @@ const notification = () => {
   const [notification, setNotification] = useState<any[]>([]);
   const [notification2, setNotification2] = useState<any[]>([]);
   const [notification3, setNotification3] = useState<any[]>([]);
+  const [notification4, setNotification4] = useState<any[]>([]);
 
   useEffect(() => {
     getNotification();
     getNotification2();
     getNotification3();
+    getNotification4();
   }, []);
 
   const getNotification = async () => {
@@ -59,6 +63,12 @@ const notification = () => {
     let res = await fetchNotification3(user?.id);
     console.log("notifications", res);
     if (res.success) setNotification3(res.data ?? []);
+  };
+
+  const getNotification4 = async () => {
+    let res = await fetchNotification4(user?.id);
+    console.log("notifications", res);
+    if (res.success) setNotification4(res.data ?? []);
   };
 
   return (
@@ -86,14 +96,16 @@ const notification = () => {
                 </View>
               </View>
             </View>
-            {[...notification, ...notification2, ...notification3].map(
+            {[...notification, ...notification2, ...notification3, ...notification4].map(
               (item) => {
                 const Component =
                   item.type === "type1"
                     ? NotificationItem
                     : item.type === "type2"
                     ? NotificationItem2
-                    : NotificationItem3;
+                    : item.type === "type3"
+                    ? NotificationItem3
+                    : NotificationItem4; // Fallback for unexpected types
                 return <Component item={item} key={item.id} router={router} />;
               }
             )}
